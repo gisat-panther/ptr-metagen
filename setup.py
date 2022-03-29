@@ -14,21 +14,12 @@ setup(
     description="Package for generation of metastructures for Panter project",
     long_description=README,
     long_description_content_type="text/markdown",
-    url="",
-    author="Real Python",
-    author_email="info@realpython.com",
+    url="https://github.com/gisat-panther/ptr-metagen",
+    author="Michal Opetal",
+    author_email="michal.opletal@gisqt.cw",
     license="MIT",
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
-    ],
-    packages=["reader"],
-    include_package_data=True,
-    install_requires=["feedparser", "html2text"],
-    entry_points={
-        "console_scripts": [
-            "realpython=reader.__main__:main",
-        ]
-    },
-)
+    ])
