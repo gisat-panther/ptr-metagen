@@ -4,7 +4,7 @@ from uuid import UUID
 from pathlib import Path
 import geopandas as gpd
 
-from base import Leaf, LeafABC, exist_in_register, prepare_data_for_leaf
+from metagen.base import Leaf, LeafABC, exist_in_register, prepare_data_for_leaf
 from inspect import signature
 
 #  elements
@@ -313,6 +313,7 @@ class Tag(Leaf):
     nameDisplay: Optional[str]
     description: Optional[str]
     color: Optional[str]
+    tagKeys: Optional[List[UUID]]
 
     def __nodes__(self) -> str:
         return 'metadata.tags'
@@ -383,4 +384,5 @@ element_factory.add(SpatialAttribute)
 element_factory.add(RelationSpatial)
 element_factory.add(RelationAttribute)
 element_factory.add(View)
+element_factory.add(Tag)
 
