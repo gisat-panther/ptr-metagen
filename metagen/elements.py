@@ -307,6 +307,21 @@ class View(Leaf):
         return 'applicationKey', 'nameDisplay'
 
 
+@exist_in_register
+class Tag(Leaf):
+    nameInternal: Optional[str]
+    nameDisplay: Optional[str]
+    description: Optional[str]
+    color: Optional[str]
+
+    def __nodes__(self) -> str:
+        return 'metadata.tags'
+
+    @property
+    def hash_attrs(self) -> tuple:
+        return tuple('nameDisplay')
+
+
 class ElementSignature(BaseModel):
     parameters: Tuple[str, ...]
 

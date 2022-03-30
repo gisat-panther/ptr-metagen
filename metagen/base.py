@@ -168,7 +168,7 @@ class JSONSerializer(Serializer):
             json.dump(structure, file, indent=6, cls=UUIDEncoder)
 
 
-from elements import ElementFactory, element_factory
+from metagen.elements import ElementFactory, element_factory
 
 
 class JSONDeserializer(DeSerializer):
