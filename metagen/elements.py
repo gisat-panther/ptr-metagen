@@ -385,5 +385,3 @@ element_factory.add(RelationSpatial)
 element_factory.add(RelationAttribute)
 element_factory.add(View)
 element_factory.add(Tag)
-
-
