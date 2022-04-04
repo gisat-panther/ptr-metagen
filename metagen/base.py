@@ -132,7 +132,7 @@ class Serializer(BaseModel, ABC):
 class DeSerializer(BaseModel, ABC):
 
     @abstractmethod
-    def load(self, path: Path) -> None:
+    def load(self, path: Path, **kwargs) -> None:
         pass
 
 
@@ -174,11 +174,11 @@ from metagen.elements import ElementFactory, element_factory
 class JSONDeserializer(DeSerializer):
     factory: ElementFactory = element_factory
 
-    def load(self, path: Path) -> None:
+    def load(self, path: Path, encoding='utf8') -> None:
 
         path = check_path(path)
 
-        with open(path, 'r') as file:
+        with open(path, 'r', encoding=encoding) as file:
             obj = json.load(file)
 
         for node, structure in obj.items():
@@ -199,8 +199,8 @@ class Generator(BaseModel):
     serializer: Serializer = Field(default=JSONSerializer())
     deserializer: DeSerializer = Field(default=JSONDeserializer())
 
-    def load(self, path: Path) -> None:
-        self.deserializer.load(path)
+    def load(self, path: Path, encoding='utf8') -> None:
+        self.deserializer.load(path, encoding=encoding)
 
     def to_dict(self) -> dict:
         return self.serializer.to_dict()
