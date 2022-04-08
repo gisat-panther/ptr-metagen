@@ -1,12 +1,14 @@
 # general and helper function and classe
 
 from pathlib import Path
-from typing import Union, Optional, Any, List
+from typing import Union, Optional, List, Any
 from pydantic import BaseModel, Field, root_validator
+from pydantic.utils import ROOT_KEY
 from abc import ABC, abstractmethod
 from uuid import UUID, uuid4
 import json
 from functools import wraps
+from warnings import warn
 
 
 # helper func
@@ -44,6 +46,17 @@ class UUIDEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
+class BaseModelWithDynamicKey(BaseModel):
+    """
+    Pydantic workaoround for custom dynamic key
+    ref: https://stackoverflow.com/questions/60089947/creating-pydantic-model-schema-with-dynamic-key
+    """
+    def __init__(self, **data: Any) -> None:
+        if self.__custom_root_type__ and data.keys() != {ROOT_KEY}:
+            data = {ROOT_KEY: data}
+        super().__init__(**data)
+
+
 # base
 class LeafABC(BaseModel, ABC):
 
@@ -54,6 +67,29 @@ class LeafABC(BaseModel, ABC):
     @property
     @abstractmethod
     def hash_attrs(self) -> tuple:
+        pass
+
+
+class ElementRegister(BaseModel, ABC):
+
+    @abstractmethod
+    def add(self, element: BaseModel) -> None:
+        pass
+
+    @abstractmethod
+    def check_register(self, obj: BaseModel) -> bool:
+        pass
+
+    @abstractmethod
+    def get_by_name(self, name: str) -> LeafABC:
+        pass
+
+    @abstractmethod
+    def get_by_hash(self, hash: int) -> LeafABC:
+        pass
+
+    @abstractmethod
+    def get_by_uuid(self, uuid: UUID) -> LeafABC:
         pass
 
 
@@ -73,15 +109,17 @@ class Register(BaseModel):
                              f'key: {element.key} and hash: {hash(element)} already exist')
 
     def check_register(self, obj: BaseModel) -> bool:
-        return all([self.hashs.get(hash(obj)),
-                    self.uuid.get(obj.key),
-                    self.name.get(obj.nameInternal)])
+        return all([self.hashs.get(hash(obj)), self.name.get(obj.nameInternal)])
 
     def get_by_name(self, name: str) -> LeafABC:
         return self.name.get(name)
 
     def get_by_hash(self, hash: int) -> LeafABC:
         return self.hashs.get(hash)
+
+    def get_by_uuid(self, uuid: str) -> LeafABC:
+        if UUID(uuid):
+            return self.uuid.get(uuid)
 
 
 register = Register()
@@ -92,7 +130,11 @@ def exist_in_register(element):
     def checkting_register(*args, **kwargs):
         instance = element(*args, **kwargs)
         if register.check_register(instance):
-            return register.get_by_hash(hash(instance))
+            registered_element = register.get_by_hash(hash(instance))
+            warn(f'Element duplication: Element {instance.__class__.__name__} with parameters: '
+                 f'{"; ".join([f"{k}: {v}" for k, v in kwargs.items()])} found in register. Element '
+                 f'{registered_element.__repr__()} returned instead')
+            return registered_element
         else:
             register.add(instance)
             return instance
@@ -114,7 +156,8 @@ class Leaf(LeafABC):
         return {k: (v.key if isinstance(v, Leaf) else v) for k, v in values.items()}
 
     def __hash__(self) -> int:
-        return hash(tuple(self.__dict__.get(attr) for attr in self.hash_attrs))
+        return hash(tuple([self.__dict__.get(attr) if not isinstance(self.__dict__.get(attr) , list)
+                                   else tuple(self.__dict__.get(attr)) for attr in self.hash_attrs]))
 
 
 # serialization & deserialization
@@ -191,15 +234,14 @@ class JSONDeserializer(DeSerializer):
                 self._parse(f'{nodes}.{node}', structure)
         elif isinstance(obj, list):
             for data in obj:
-                element = self.factory.create_element(nodes, data)
-                register.add(element)
+                self.factory.create_element(nodes, data)
 
 
 class Generator(BaseModel):
     serializer: Serializer = Field(default=JSONSerializer())
     deserializer: DeSerializer = Field(default=JSONDeserializer())
 
-    def load(self, path: Path, encoding='utf8') -> None:
+    def load_fixtures(self, path: Path, encoding='utf8') -> None:
         self.deserializer.load(path, encoding=encoding)
 
     def to_dict(self) -> dict:
@@ -209,17 +251,27 @@ class Generator(BaseModel):
         self.serializer.to_json(path)
 
     def get_element_by_nameInternal(self, name: str) -> LeafABC:
-        if register.get_by_name(name):
+        """Return element of given nameInternal"""
+        if self.register.get_by_name(name):
             return register.get_by_name(name)
         else:
             raise ValueError(f'Element with nameInternal {name} did not find')
+
+    def get_element_by_uuid(self, uuid: str) -> LeafABC:
+        """Return element of given uuid"""
+        if self.register.get_by_uuid(uuid):
+            return register.get_by_name(uuid)
+        else:
+            raise ValueError(f'Element with uuid {uuid} did not find')
 
     @property
     def register(self):
         return register
 
     def get_elements_by_type(self, element: Leaf) -> List[Leaf]:
+        """Return list of all elements of given element type"""
         return [v for k, v in self.register.name.items() if isinstance(v, element.__wrapped__)]
 
     def get_elements_by_name(self, name: str) -> List[Leaf]:
+        """Return list of elements that internal name contains part of input string"""
         return [v for k, v in self.register.name.items() if k.__contains__(name)]

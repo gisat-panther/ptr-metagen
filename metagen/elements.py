@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, root_validator, validator
+from pydantic import BaseModel, Field, root_validator, validator, AnyUrl
 from typing import Optional, Union, List, Literal, Tuple
 from uuid import UUID
 from pathlib import Path
@@ -7,7 +7,10 @@ import geopandas as gpd
 from metagen.base import Leaf, LeafABC, exist_in_register, prepare_data_for_leaf
 from inspect import signature
 
+from metagen.components import State
+
 #  elements
+# metadata
 @exist_in_register
 class Application(Leaf):
 
@@ -27,7 +30,7 @@ class Application(Leaf):
 
     @property
     def hash_attrs(self) -> tuple:
-        return 'name'
+        return tuple(['name'])
 
 
 @exist_in_register
@@ -183,13 +186,32 @@ class Style(Leaf):
 
 
 @exist_in_register
+class Tag(Leaf):
+    nameInternal: Optional[str]
+    nameDisplay: Optional[str]
+    description: Optional[str]
+    color: Optional[str]
+    tagKeys: Optional[List[UUID]]
+
+    def __nodes__(self) -> str:
+        return 'metadata.tags'
+
+    @property
+    def hash_attrs(self) -> tuple:
+        return 'nameDisplay', 'tagKeys'
+
+
+# datasource
+
+
+@exist_in_register
 class SpatialVector(Leaf):
     nameInternal: Optional[str]
     layerName: Optional[str]
     tableName: Optional[str]
     fidColumnName: Optional[str]
     geometryColumnName: Optional[str]
-    type: Literal['vector'] = 'vector'
+    type: Literal['vector'] = Field(default='vector')
 
     def __nodes__(self) -> str:
         return 'dataSources.spatial'
@@ -207,7 +229,7 @@ class SpatialWMS(Leaf):
     styles: Optional[str]
     configuration: Optional[dict]
     params: Optional[dict]
-    type: Literal['wms'] = 'wms'
+    type: Literal['wms'] = Field(default='wms')
 
     def __nodes__(self) -> str:
         return 'dataSources.spatial'
@@ -221,7 +243,7 @@ class SpatialWMS(Leaf):
 class SpatialWMTS(Leaf):
     nameInternal: Optional[str]
     urls: Optional[List[str]]
-    type: Literal['wmts'] = 'wmts'
+    type: Literal['wmts'] = Field(default='wmts')
 
     def __nodes__(self) -> str:
         return 'dataSources.spatial'
@@ -229,6 +251,20 @@ class SpatialWMTS(Leaf):
     @property
     def hash_attrs(self) -> tuple:
         return 'urls', 'types'
+
+
+@exist_in_register
+class SpatialCOG(Leaf):
+    nameInternal: Optional[str]
+    url: Optional[str]
+    type: Literal['cog'] = Field(default='cog')
+
+    def __nodes__(self) -> str:
+        return 'dataSources.spatial'
+
+    @property
+    def hash_attrs(self) -> tuple:
+        return tuple(['url'])
 
 
 @exist_in_register
@@ -247,6 +283,7 @@ class SpatialAttribute(Leaf):
         return 'attribution', 'tableName', 'columnName', 'fidColumnName'
 
 
+# relations
 @exist_in_register
 class RelationSpatial(Leaf):
     nameInternal: Optional[str]
@@ -290,6 +327,8 @@ class RelationAttribute(Leaf):
         return 'scopeKey:', 'periodKey', 'placeKey', 'attributeDataSourceKey', 'layerTemplateKey', 'scenarioKey', \
                'caseKey', 'attributeSetKey', 'attributeKey', 'areaTreeLevelKey', 'applicationKey'
 
+# views
+
 
 @exist_in_register
 class View(Leaf):
@@ -297,7 +336,8 @@ class View(Leaf):
     applicationKey: Optional[Union[str, Leaf]]
     nameDisplay: Optional[str]
     description: Optional[str]
-    state: Optional[dict]
+    state: Optional[State]
+    tagKeys: Optional[List[str]]
 
     def __nodes__(self) -> str:
         return 'views.views'
@@ -307,33 +347,30 @@ class View(Leaf):
         return 'applicationKey', 'nameDisplay'
 
 
-@exist_in_register
-class Tag(Leaf):
-    nameInternal: Optional[str]
-    nameDisplay: Optional[str]
-    description: Optional[str]
-    color: Optional[str]
-    tagKeys: Optional[List[UUID]]
-
-    def __nodes__(self) -> str:
-        return 'metadata.tags'
-
-    @property
-    def hash_attrs(self) -> tuple:
-        return tuple('nameDisplay')
-
-
 class ElementSignature(BaseModel):
     parameters: Tuple[str, ...]
+    type: Optional[str]
 
-    @validator('parameters', pre=True)
-    def get_pars_from_signature(cls, value) -> tuple:
+    @root_validator(pre=True)
+    def get_pars_from_signature(cls, values)-> tuple:
+        element = values.get('parameters')
         try:
-            return tuple([pars for pars in signature(value).parameters])
+            values['parameters'] = tuple([pars for pars in signature(element).parameters])
+        except TypeError:
+            values['parameters'] = tuple([pars for pars in signature(element.__wrapped__).parameters])
+
+        try:
+            values['type'] = element.__fields__.get('type').default
         except AttributeError:
-            return tuple([pars for pars in signature(value.__wrapped__).parameters])
+            pass
+
+        return values
 
     def check_signature(self, input_parameters: List[str]) -> bool:
+        if self.type:
+            if self.type != input_parameters.get('type'):
+                return False
+
         return all([True if k in self.parameters else False for k in input_parameters.keys()])
 
     def __hash__(self):
@@ -344,12 +381,12 @@ class ElementFactory(BaseModel):
     elements_register: dict = Field(default_factory=dict)
 
     def add(self, element: Leaf) -> None:
-        signatute = ElementSignature(parameters=element.__wrapped__)
+        element_signature = ElementSignature(parameters=element)
 
         if not self.elements_register.get(element.__nodes__(self)):
             self.elements_register.update({element.__nodes__(self): {}})
 
-        self.elements_register[element.__nodes__(self)].update({signatute: element})
+        self.elements_register[element.__nodes__(self)].update({element_signature: element})
 
     def create_element(self, nodes: str, data: dict) -> Leaf:
         element_types = self.elements_register.get(nodes)
@@ -361,10 +398,8 @@ class ElementFactory(BaseModel):
 
         for signature, element in element_types.items():
             if signature.check_signature(init_data):
-                try:
-                    return element.parse_obj(init_data)
-                except AttributeError:
-                    return element.__wrapped__.parse_obj(init_data)
+                return element(**init_data)
+
 
 
 element_factory = ElementFactory()
@@ -385,3 +420,4 @@ element_factory.add(RelationSpatial)
 element_factory.add(RelationAttribute)
 element_factory.add(View)
 element_factory.add(Tag)
+element_factory.add(SpatialCOG)
