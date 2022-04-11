@@ -7,26 +7,6 @@ from pydantic.utils import ROOT_KEY
 from abc import ABC, abstractmethod
 from uuid import UUID, uuid4
 import json
-from functools import wraps
-from warnings import warn
-
-
-# helper func
-def create_file(path: Path) -> None:
-    path.mkdir(parents=True, exist_ok=True)
-
-
-def check_path(path: Union[Path, str]) -> Path:
-    if not isinstance(path, Path):
-        return Path(path)
-    return path
-
-
-def prepare_data_for_leaf(obj: dict) -> dict:
-    data = obj.pop('data')
-    obj.update(data)
-    return obj
-
 
 # helper class
 class SingletonMeta(type):
@@ -36,14 +16,6 @@ class SingletonMeta(type):
         if cls not in cls._instance:
             cls._instance[cls] = super(SingletonMeta, cls).__call__(*args, **kwargs)
         return cls._instance[cls]
-
-
-class UUIDEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, UUID):
-            # if the obj is uuid, we simply return the value of uuid
-            return str(obj)
-        return json.JSONEncoder.default(self, obj)
 
 
 class BaseModelWithDynamicKey(BaseModel):
@@ -59,6 +31,7 @@ class BaseModelWithDynamicKey(BaseModel):
 
 # base
 class LeafABC(BaseModel, ABC):
+    key: UUID
 
     @abstractmethod
     def __nodes__(self) -> str:
@@ -70,78 +43,6 @@ class LeafABC(BaseModel, ABC):
         pass
 
 
-class ElementRegister(BaseModel, ABC):
-
-    @abstractmethod
-    def add(self, element: BaseModel) -> None:
-        pass
-
-    @abstractmethod
-    def check_register(self, obj: BaseModel) -> bool:
-        pass
-
-    @abstractmethod
-    def get_by_name(self, name: str) -> LeafABC:
-        pass
-
-    @abstractmethod
-    def get_by_hash(self, hash: int) -> LeafABC:
-        pass
-
-    @abstractmethod
-    def get_by_uuid(self, uuid: UUID) -> LeafABC:
-        pass
-
-
-# register
-class Register(BaseModel):
-    hashs: dict = Field(default_factory=dict)
-    uuid: dict = Field(default_factory=dict)
-    name: dict = Field(default_factory=dict)
-
-    def add(self, element: BaseModel) -> None:
-        if not self.check_register(element):
-            self.hashs.update({hash(element): element})
-            self.uuid.update({element.key: element})
-            self.name.update({element.nameInternal: element})
-        else:
-            raise ValueError(f'PTR element "{element.__class__.__name__}" with nameInternal: {element.nameInternal}, '
-                             f'key: {element.key} and hash: {hash(element)} already exist')
-
-    def check_register(self, obj: BaseModel) -> bool:
-        return all([self.hashs.get(hash(obj)), self.name.get(obj.nameInternal)])
-
-    def get_by_name(self, name: str) -> LeafABC:
-        return self.name.get(name)
-
-    def get_by_hash(self, hash: int) -> LeafABC:
-        return self.hashs.get(hash)
-
-    def get_by_uuid(self, uuid: str) -> LeafABC:
-        if UUID(uuid):
-            return self.uuid.get(uuid)
-
-
-register = Register()
-
-
-def exist_in_register(element):
-    @wraps(element)
-    def checkting_register(*args, **kwargs):
-        instance = element(*args, **kwargs)
-        if register.check_register(instance):
-            registered_element = register.get_by_hash(hash(instance))
-            warn(f'Element duplication: Element {instance.__class__.__name__} with parameters: '
-                 f'{"; ".join([f"{k}: {v}" for k, v in kwargs.items()])} found in register. Element '
-                 f'{registered_element.__repr__()} returned instead')
-            return registered_element
-        else:
-            register.add(instance)
-            return instance
-
-    return checkting_register
-
-
 # element base parent
 class Leaf(LeafABC):
     key: Optional[Union[UUID, str]] = Field(default_factory=uuid4)
@@ -151,12 +52,12 @@ class Leaf(LeafABC):
         key = data.pop('key')
         return {"key": str(key), "data": data}
 
-    @root_validator(pre=True)
+    @root_validator(pre=True, allow_reuse=True)
     def set_key(cls, values: dict) -> dict:
         return {k: (v.key if isinstance(v, Leaf) else v) for k, v in values.items()}
 
     def __hash__(self) -> int:
-        return hash(tuple([self.__dict__.get(attr) if not isinstance(self.__dict__.get(attr) , list)
+        return hash(tuple([self.__dict__.get(attr) if not isinstance(self.__dict__.get(attr), list)
                                    else tuple(self.__dict__.get(attr)) for attr in self.hash_attrs]))
 
 
@@ -177,6 +78,10 @@ class DeSerializer(BaseModel, ABC):
     @abstractmethod
     def load(self, path: Path, **kwargs) -> None:
         pass
+
+
+from metagen.register import register
+from metagen.utils import check_path, create_file, open_json, UUIDEncoder
 
 
 class JSONSerializer(Serializer):
@@ -221,8 +126,7 @@ class JSONDeserializer(DeSerializer):
 
         path = check_path(path)
 
-        with open(path, 'r', encoding=encoding) as file:
-            obj = json.load(file)
+        obj = open_json(path, encoding)
 
         for node, structure in obj.items():
             self._parse(node, structure)

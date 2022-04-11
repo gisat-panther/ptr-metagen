@@ -3,10 +3,11 @@ from typing import Optional, Union, List, Literal, Tuple
 from uuid import UUID
 from pathlib import Path
 import geopandas as gpd
-
-from metagen.base import Leaf, LeafABC, exist_in_register, prepare_data_for_leaf
 from inspect import signature
 
+from metagen.base import Leaf, LeafABC
+from metagen.utils import prepare_data_for_leaf
+from metagen.register import exist_in_register
 from metagen.components import State
 
 #  elements
@@ -337,7 +338,7 @@ class View(Leaf):
     nameDisplay: Optional[str]
     description: Optional[str]
     state: Optional[State]
-    tagKeys: Optional[List[str]]
+    tagKeys: Optional[List[Union[str, Leaf]]]
 
     def __nodes__(self) -> str:
         return 'views.views'
@@ -345,6 +346,10 @@ class View(Leaf):
     @property
     def hash_attrs(self) -> tuple:
         return 'applicationKey', 'nameDisplay'
+
+    @validator('tagKeys', pre=True)
+    def set_tagKey(cls, values):
+        return [value.key if isinstance(value, Leaf) else value for value in values]
 
 
 class ElementSignature(BaseModel):

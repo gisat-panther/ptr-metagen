@@ -179,4 +179,3 @@
 #
 #
 #
-#     gen.to_json(fld / 'view_element_example.json')

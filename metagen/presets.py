@@ -1,7 +1,15 @@
 from enum import Enum
+from abc import ABC
 
 
-class BackgroundMapsPreset(Enum):
+class Preset(ABC):
+    pass
+
+
+class PresetBackgroundMaps(Preset):
+    """
+    Preset for MapBackgound
+    """
     CartoDB_LightNoLabels = {
         "key": "cartoDB_LightNoLabels",
         "type": "wmts",
@@ -10,7 +18,7 @@ class BackgroundMapsPreset(Enum):
         }}
 
 
-class MapSynchronizationPreset(Enum):
+class PresetMapSynchronization(Preset):
     AllTrue = {"roll": True,
                "tilt": True,
                "range": True,
@@ -19,5 +27,5 @@ class MapSynchronizationPreset(Enum):
                "boxRange": True}
 
 
-class MapSettingViewPreset(Enum):
+class PresetMapSettingView(Preset):
     Europe = {"center": {"lat": 45.77, "lon": 14.77}, "boxRange": 2103667}

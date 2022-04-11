@@ -1,7 +1,7 @@
 import pytest
-from metagen.presets import BackgroundMaps
-from metagen.components.map import BackgroundLayer
+from metagen.presets import PresetBackgroundMaps
+from metagen.components import MapBackgroundLayer
 
 
-def test_background_preset():
-    assert BackgroundLayer.from_presets(BackgroundMaps.CartoDB_LightNoLabels)
+def test_background_use_enum():
+    assert MapBackgroundLayer(**PresetBackgroundMaps.CartoDB_LightNoLabels)
