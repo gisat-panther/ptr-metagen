@@ -19,9 +19,10 @@ def check_path(path: Union[Path, str]) -> Path:
 
 
 def prepare_data_for_leaf(obj: dict) -> dict:
-    data = obj.pop('data')
-    obj.update(data)
-    return obj
+    new = obj.copy()
+    data = new.pop('data')
+    new.update(data)
+    return new
 
 
 def open_json(path: Union[str, Path], encoding='utf8'):

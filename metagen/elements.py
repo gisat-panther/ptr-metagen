@@ -338,7 +338,7 @@ class View(Leaf):
     nameDisplay: Optional[str]
     description: Optional[str]
     state: Optional[State]
-    tagKeys: Optional[List[Union[str, Leaf]]]
+    tagKeys: Optional[List[Union[UUID, str, Leaf]]]
 
     def __nodes__(self) -> str:
         return 'views.views'

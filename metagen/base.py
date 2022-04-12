@@ -8,6 +8,7 @@ from abc import ABC, abstractmethod
 from uuid import UUID, uuid4
 import json
 
+
 # helper class
 class SingletonMeta(type):
     _instance = {}

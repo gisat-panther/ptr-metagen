@@ -2,7 +2,7 @@ import pytest
 
 from metagen.utils import prepare_data_for_leaf
 from metagen.elements import View
-from test.fixtures import VIEW, LAYER_TEMPLATE_1, TAG_1
+from test.fixtures import VIEW, TAG_1, LAYER_TEMPLATE_1
 from metagen.elements import LayerTemplate, Tag
 from metagen.components import Timeline, TimelineLegend, TimelineItem, TimelineLayer, State, StateComponents, Maps, \
     ViewComponent, MapDefinitions, Map, MapSetDefinitions, MapSetDefinitionsData, MapSet, MapBackgroundLayer,\
@@ -10,14 +10,16 @@ from metagen.components import Timeline, TimelineLegend, TimelineItem, TimelineL
 from metagen.presets import PresetBackgroundMaps, PresetMapSynchronization, PresetMapSettingView
 
 
+
+
 @pytest.fixture
 def tag():
-    return Tag(**TAG_1)
+    return Tag(**prepare_data_for_leaf(TAG_1))
 
 
 @pytest.fixture
 def layer_template_1():
-    return LayerTemplate(**LAYER_TEMPLATE_1)
+    return LayerTemplate(**prepare_data_for_leaf(LAYER_TEMPLATE_1))
 
 
 def test_element_view_model():
