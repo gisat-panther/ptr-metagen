@@ -66,7 +66,7 @@ class MapSetDefinitions(BaseModelArbitrary):
 
 
 class MapSet(BaseModelWithDynamicKey):
-    __root__: Dict[str, MapDefinitions]
+    __root__: Dict[str, MapSetDefinitions]
 
 
 class Maps(BaseModel):

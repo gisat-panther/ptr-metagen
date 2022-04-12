@@ -39,7 +39,7 @@ class Register(BaseModel):
     def add(self, element: BaseModel) -> None:
         if not self.check_register(element):
             self.hashs.update({hash(element): element})
-            self.uuid.update({element.key: element})
+            self.uuid.update({str(element.key): element})
             self.name.update({element.nameInternal: element})
         else:
             raise ValueError(f'PTR element "{element.__class__.__name__}" with nameInternal: {element.nameInternal}, '
@@ -51,7 +51,7 @@ class Register(BaseModel):
     def get_by_name(self, name: str) -> LeafABC:
         return self.name.get(name)
 
-    def get_by_hash(self, hash: int) -> LeafABC:
+    def get_by_hash(self, hash: int) -> LeafABC:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
         return self.hashs.get(hash)
 
     def get_by_uuid(self, uuid: str) -> LeafABC:

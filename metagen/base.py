@@ -152,7 +152,7 @@ class Generator(BaseModel):
     def to_dict(self) -> dict:
         return self.serializer.to_dict()
 
-    def to_json(self, path: Path) -> None:
+    def to_json(self, path: Union[str, Path]) -> None:
         self.serializer.to_json(path)
 
     def get_element_by_nameInternal(self, name: str) -> LeafABC:
@@ -165,7 +165,7 @@ class Generator(BaseModel):
     def get_element_by_uuid(self, uuid: str) -> LeafABC:
         """Return element of given uuid"""
         if self.register.get_by_uuid(uuid):
-            return register.get_by_name(uuid)
+            return register.get_by_uuid(uuid)
         else:
             raise ValueError(f'Element with uuid {uuid} did not find')
 
