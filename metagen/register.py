@@ -6,6 +6,8 @@ from warnings import warn
 from metagen.base import LeafABC
 from pydantic import BaseModel, Field
 
+# TODO: Register name - check on name internal
+
 
 class ElementRegister(BaseModel, ABC):
 
@@ -31,7 +33,7 @@ class ElementRegister(BaseModel, ABC):
 
 
 # register
-class Register(BaseModel):
+class Register(ElementRegister):
     hashs: dict = Field(default_factory=dict)
     uuid: dict = Field(default_factory=dict)
     name: dict = Field(default_factory=dict)
@@ -66,7 +68,7 @@ def exist_in_register(element):
     @wraps(element)
     def checkting_register(*args, **kwargs):
         instance = element(*args, **kwargs)
-        if register.check_register(instance):
+        if register.get_by_hash(hash(instance)):
             registered_element = register.get_by_hash(hash(instance))
             warn(f'Element duplication: Element {instance.__class__.__name__} with parameters: '
                  f'{"; ".join([f"{k}: {v}" for k, v in kwargs.items()])} found in register. Element '

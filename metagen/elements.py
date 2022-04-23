@@ -41,11 +41,11 @@ class Configuration(Leaf):
     data:  Optional[dict]
 
     def __nodes__(self) -> str:
-        return 'configurations'
+        return 'application.configurations'
 
     @property
     def hash_attrs(self) -> tuple:
-        return 'applicationKey', 'data'
+        return 'applicationKey', 'nameInternal'
 
 
 @exist_in_register
@@ -101,7 +101,7 @@ class LayerTemplate(Leaf):
 
     @property
     def hash_attrs(self) -> tuple:
-        return 'applicationKey', 'nameDisplay'
+        return 'applicationKey', 'nameDisplay', 'nameInternal'
 
 
 @exist_in_register
@@ -270,6 +270,15 @@ class SpatialCOG(Leaf):
 
 @exist_in_register
 class SpatialAttribute(Leaf):
+    """
+    Spatial attribute is used to create link on data stored in PostgreSQL Database.
+    Element attribute:
+     - nameInternal: Optional[str] : internal name of element, unique
+     - attribution: Optional[str] : '''todo: add description'''
+     - tableName: Optional[str] : PostgreSQL table name
+     - columnName: Optional[str] : PostgreSQL column name
+     - fidColumnName: Optional[str] : PostgreSQL fid column name
+    """
     nameInternal: Optional[str]
     attribution: Optional[str]
     tableName: Optional[str]
