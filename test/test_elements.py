@@ -1,9 +1,9 @@
 import pytest
 
 from metagen.utils import prepare_data_for_leaf
-from metagen.elements import View
+from metagen.metadata import View
 from test.fixtures import VIEW, TAG_1, LAYER_TEMPLATE_1
-from metagen.elements import LayerTemplate, Tag
+from metagen.metadata import LayerTemplate, Tag
 from metagen.components import Timeline, TimelineLegend, TimelineItem, TimelineLayer, State, StateComponents, Maps, \
     ViewComponent, MapDefinitions, Map, MapSetDefinitions, MapSetDefinitionsData, MapSet, MapBackgroundLayer,\
     MapViewSetting, MapSynchronizationSetting

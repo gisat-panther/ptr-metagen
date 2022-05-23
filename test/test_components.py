@@ -1,8 +1,8 @@
 import pytest
 from metagen.components import Filter
-from metagen.utils import prepare_data_for_leaf
 from test.fixtures import LAYER_TEMPLATE_1
 from metagen import LayerTemplate
+from metagen.utils import prepare_data_for_leaf
 
 
 def test_filter_deserializations():

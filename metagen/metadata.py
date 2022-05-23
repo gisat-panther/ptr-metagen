@@ -1,16 +1,17 @@
-from pydantic import BaseModel, Field, root_validator, validator, AnyUrl
-from typing import Optional, Union, List, Literal, Tuple
-from uuid import UUID
+from pydantic import BaseModel, Field, root_validator, validator
+from typing import Optional, Union, List, Literal, Tuple, Type
 from pathlib import Path
 import geopandas as gpd
 from inspect import signature
+from uuid import UUID
 
-from metagen.base import Leaf, LeafABC
+
+from metagen.base import Leaf
 from metagen.utils import prepare_data_for_leaf
-from metagen.register import exist_in_register
 from metagen.components import State
+from metagen.register import exist_in_register
 
-#  elements
+
 # metadata
 @exist_in_register
 class Application(Leaf):
@@ -297,13 +298,13 @@ class SpatialAttribute(Leaf):
 @exist_in_register
 class RelationSpatial(Leaf):
     nameInternal: Optional[str]
-    scopeKey: Optional[Union[UUID, LeafABC]]
-    periodKey: Optional[Union[UUID, LeafABC]]
-    placeKey: Optional[Union[UUID, LeafABC]]
-    spatialDataSourceKey: Optional[Union[UUID, LeafABC]]
-    layerTemplateKey: Optional[Union[UUID, LeafABC]]
-    applicationKey: Optional[Union[str, LeafABC]]
-    caseKey: Optional[Union[UUID, LeafABC]]
+    scopeKey: Optional[Union[UUID, Leaf]]
+    periodKey: Optional[Union[UUID, Leaf]]
+    placeKey: Optional[Union[UUID, Leaf]]
+    spatialDataSourceKey: Optional[Union[UUID, Leaf]]
+    layerTemplateKey: Optional[Union[UUID, Leaf]]
+    applicationKey: Optional[Union[str, Leaf]]
+    caseKey: Optional[Union[UUID, Leaf]]
 
     def __nodes__(self) -> str:
         return 'relations.spatial'
@@ -317,17 +318,17 @@ class RelationSpatial(Leaf):
 @exist_in_register
 class RelationAttribute(Leaf):
     nameInternal: Optional[str]
-    scopeKey: Optional[Union[UUID, LeafABC]]
-    periodKey: Optional[Union[UUID, LeafABC]]
-    placeKey: Optional[Union[UUID, LeafABC]]
-    attributeDataSourceKey: Optional[Union[UUID, LeafABC]]
-    layerTemplateKey: Optional[Union[UUID, LeafABC]]
-    scenarioKey: Optional[Union[UUID, LeafABC]]
-    caseKey: Optional[Union[UUID, LeafABC]]
-    attributeSetKey: Optional[Union[UUID, LeafABC]]
-    attributeKey: Optional[Union[UUID, LeafABC]]
-    areaTreeLevelKey: Optional[Union[UUID, LeafABC]]
-    applicationKey: Optional[Union[str, LeafABC]]
+    scopeKey: Optional[Union[UUID, Leaf]]
+    periodKey: Optional[Union[UUID, Leaf]]
+    placeKey: Optional[Union[UUID, Leaf]]
+    attributeDataSourceKey: Optional[Union[UUID, Leaf]]
+    layerTemplateKey: Optional[Union[UUID, Leaf]]
+    scenarioKey: Optional[Union[UUID, Leaf]]
+    caseKey: Optional[Union[UUID, Leaf]]
+    attributeSetKey: Optional[Union[UUID, Leaf]]
+    attributeKey: Optional[Union[UUID, Leaf]]
+    areaTreeLevelKey: Optional[Union[UUID, Leaf]]
+    applicationKey: Optional[Union[str, Leaf]]
 
     def __nodes__(self) -> str:
         return 'relations.attribute'
@@ -394,7 +395,7 @@ class ElementSignature(BaseModel):
 class ElementFactory(BaseModel):
     elements_register: dict = Field(default_factory=dict)
 
-    def add(self, element: Leaf) -> None:
+    def add(self, element: Type[Leaf]) -> None:
         element_signature = ElementSignature(parameters=element)
 
         if not self.elements_register.get(element.__nodes__(self)):
@@ -413,7 +414,6 @@ class ElementFactory(BaseModel):
         for signature, element in element_types.items():
             if signature.check_signature(init_data):
                 return element(**init_data)
-
 
 
 element_factory = ElementFactory()

@@ -3,8 +3,7 @@ from uuid import UUID
 from abc import ABC
 from pydantic import BaseModel
 
-from metagen.base import Leaf, BaseModelWithDynamicKey
-from metagen.utils import set_key_from_input
+from metagen.base import Leaf, BaseModelWithDynamicKey, set_key_from_input
 
 
 class BaseModelArbitrary(BaseModel):

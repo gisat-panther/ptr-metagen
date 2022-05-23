@@ -3,8 +3,6 @@ from pathlib import Path
 from typing import Union
 from uuid import UUID
 
-from metagen.base import Leaf
-
 
 # helper functions
 
@@ -28,19 +26,6 @@ def prepare_data_for_leaf(obj: dict) -> dict:
 def open_json(path: Union[str, Path], encoding='utf8'):
     with open(path, 'r', encoding=encoding) as file:
         return json.load(file)
-
-
-def set_key_from_input(value: Union[str, UUID, Leaf]):
-    """
-    Helper method used as validator in pydantic model.
-    For input string, Leaf or UUID return valid UUID
-    """
-    if isinstance(value, Leaf):
-        return value.key
-    if isinstance(value, str):
-        return UUID(value)
-    return value
-
 
 # helper class
 class UUIDEncoder(json.JSONEncoder):

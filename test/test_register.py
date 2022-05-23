@@ -1,5 +1,5 @@
 import pytest
-from metagen.elements import Application, LayerTemplate
+from metagen.metadata import Application, LayerTemplate
 
 
 def test_element_duplicity():

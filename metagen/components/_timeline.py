@@ -3,10 +3,10 @@ from typing import List, Union, Optional
 from uuid import UUID
 from datetime import datetime
 
+from metagen.base import Leaf, set_key_from_input
 from metagen.components._general import Component
-from metagen.base import Leaf
 from metagen.components._general import Filter
-from metagen.utils import set_key_from_input
+
 
 
 # TODO: Verify layerState - application True
