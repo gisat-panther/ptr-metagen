@@ -64,26 +64,26 @@ class DictRegister(Register):
             return self.uuid.get(uuid)
 
 
-class PandasRegister(Register):
-    table: DataFrame = Field(default=DataFrame())
-
-    def add(self, element: Type[LeafABC]) -> None:
-        self.table()
-
-    def check_register(self, element: Type[LeafABC]) -> bool:
-        pass
-
-
-    def get_by_name(self, name: str) -> Type[LeafABC]:
-        pass
-
-
-    def get_by_hash(self, hash: int) -> Type[LeafABC]:
-        pass
-
-
-    def get_by_uuid(self, uuid: UUID) -> Type[LeafABC]:
-        pass
+# class PandasRegister(Register):
+#     table: DataFrame = Field(default=DataFrame())
+#
+#     def add(self, element: Type[LeafABC]) -> None:
+#         self.table()
+#
+#     def check_register(self, element: Type[LeafABC]) -> bool:
+#         pass
+#
+#
+#     def get_by_name(self, name: str) -> Type[LeafABC]:
+#         pass
+#
+#
+#     def get_by_hash(self, hash: int) -> Type[LeafABC]:
+#         pass
+#
+#
+#     def get_by_uuid(self, uuid: UUID) -> Type[LeafABC]:
+#         pass
 
 
 register = DictRegister()

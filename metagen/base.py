@@ -1,6 +1,6 @@
 # general and helper function and classe
 
-from typing import Union, Optional, Any
+from typing import Union, Optional, Any, List
 from pydantic import BaseModel, Field, root_validator
 from pydantic.utils import ROOT_KEY
 from abc import ABC, abstractmethod
@@ -30,6 +30,7 @@ class BaseModelWithDynamicKey(BaseModel):
 
 class LeafABC(BaseModel, ABC):
     key: UUID
+    _input_pars: List[str] = Field(default_factory=list)
 
     @abstractmethod
     def __nodes__(self) -> str:
@@ -39,6 +40,9 @@ class LeafABC(BaseModel, ABC):
     @abstractmethod
     def hash_attrs(self) -> tuple:
         pass
+
+    class Config:
+        fields = {'_input_pars': {'exclude': True}}
 
 
 # element

@@ -13,6 +13,7 @@ from metagen.components._general import Filter
 # TODO: how exactly works and by generated LayerState
 # TODO: Timeline legent generalize
 # TODO: Hashble TimilineItem, TimelineLayers check for duplicity
+# TODO: add style definition to raster
 
 class TimelinePeriod(BaseModel):
     start: Union[str, datetime]
@@ -21,6 +22,7 @@ class TimelinePeriod(BaseModel):
 
 class LayerState(BaseModel):
     layerTemplateKey: Union[str, UUID, Leaf]
+    styleKey: Optional[Union[str, UUID, Leaf]]
     filterByActive: dict = Field(default={"application": True})
 
     _set_key = validator('layerTemplateKey', pre=True, allow_reuse=True)(set_key_from_input)
@@ -43,10 +45,10 @@ class TimelineItem(BaseModel):
     layerState: LayerState
 
     @classmethod
-    def set_by_layerTemplate(cls, mapZIndex: int, layerTemplate: Leaf):
+    def set_by_layerTemplate(cls, mapZIndex: int, layerTemplate: Leaf, style: Optional[Leaf] = None):
         filter = Filter.set('layerTemplateKey', layerTemplate)
         periods = TimelineItemPeriod(filter=filter)
-        layerstate = LayerState(layerTemplateKey=layerTemplate)
+        layerstate = LayerState(layerTemplateKey=layerTemplate, styleKey=style)
         return cls(mapZIndex=mapZIndex, periods=periods, layerState=layerstate)
 
 
