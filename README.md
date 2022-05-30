@@ -1,7 +1,12 @@
 ptr-metagen
 
+###Description 
 Python package for creation of metastracture used within the Panther Framework  (https://github.com/gisat-panther)
 
+###Install
+```pip install metagen```
+
+### Exaples
 View generation example
     ... tags and layer template prepared
 
