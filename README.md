@@ -6,7 +6,7 @@ Python package for creation of metastracture used within the Panther Framework  
 ###Install
 ```pip install metagen```
 
-### Exaples
+### Examples
 View generation example
     ... tags and layer template prepared
 
