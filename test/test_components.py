@@ -11,25 +11,22 @@ from metagen.presets import PresetBackgroundMaps, PresetMapSynchronization, Pres
 from metagen.components import Filter
 
 
-def test_filter_deserializations():
-    assert Filter(**{"layerTemplateKey": "a0c8d936-2e52-4c31-8c55-ffefb1fed8c0"})
-
-
-def test_set_fillter_from_Leaf():
-    data = prepare_data_for_leaf(LAYER_TEMPLATE_1)
-    lt = LayerTemplate(**data)
-    assert Filter.set('layerTemplateKey', lt)
-
-
-
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def tag():
     return Tag(**prepare_data_for_leaf(TAG_1))
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def layer_template_1():
     return LayerTemplate(**prepare_data_for_leaf(LAYER_TEMPLATE_1))
+
+
+def test_filter_deserializations():
+    assert Filter(**{"layerTemplateKey": "a0c8d936-2e52-4c31-8c55-ffefb1fed8c0"})
+
+
+def test_set_fillter_from_Leaf(layer_template_1):
+    assert Filter.set('layerTemplateKey', layer_template_1)
 
 
 def test_element_view_model():
