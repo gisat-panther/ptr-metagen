@@ -5,7 +5,7 @@ from typing import Union, List
 import json
 
 from metagen.base import Leaf
-from metagen.utils import create_file, check_path, open_json, UUIDEncoder
+from metagen.helpers import create_file, check_path, open_json, UUIDEncoder
 from metagen.metadata import ElementFactory, element_factory
 from metagen.register import register, Register
 

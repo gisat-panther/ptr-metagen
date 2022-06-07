@@ -1,6 +1,6 @@
 import pytest
 
-from metagen.utils import prepare_data_for_leaf
+from metagen.helpers import prepare_data_for_leaf
 from metagen.metadata import View
 from test.fixtures import VIEW, TAG_1, LAYER_TEMPLATE_1
 from metagen.metadata import LayerTemplate, Tag

@@ -6,13 +6,6 @@ from pydantic import BaseModel
 from metagen.base import Leaf, BaseModelWithDynamicKey, set_key_from_input
 
 
-class BaseModelArbitrary(BaseModel):
-    pass
-
-    class Config:
-        arbitrary_types_allowed = True
-
-
 class Component(BaseModel, ABC):
     pass
 

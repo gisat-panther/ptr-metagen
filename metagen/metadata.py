@@ -7,7 +7,7 @@ from uuid import UUID
 
 
 from metagen.base import Leaf
-from metagen.utils import prepare_data_for_leaf
+from metagen.helpers import prepare_data_for_leaf
 from metagen.components import State
 from metagen.register import exist_in_register
 
@@ -75,6 +75,7 @@ class Place(Leaf):
     bbox: Optional[List[float]]
 
     @validator('geometry')
+    # TODO: erase
     def place_geometry(cls, v):
         if isinstance(v, Path):
             geodata = gpd.read_file(v)
