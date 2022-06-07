@@ -5,6 +5,27 @@ from pydantic import BaseModel, Field, root_validator, PrivateAttr
 from pydantic.utils import ROOT_KEY
 from abc import ABC, abstractmethod
 from uuid import UUID, uuid4
+import copy
+
+
+# helper function
+def make_hash(o):
+    """ Makes a hash from a dictionary, list, tuple or set to any level, that contains
+  only other hashable types (including any lists, tuples, sets, and
+  dictionaries). """
+
+    if isinstance(o, (set, tuple, list)):
+        return tuple([make_hash(e) for e in o])
+
+    elif not isinstance(o, dict):
+
+        return hash(o)
+
+    new_o = copy.deepcopy(o)
+    for k, v in new_o.items():
+        new_o[k] = make_hash(v)
+
+    return hash(tuple(frozenset(sorted(new_o.items()))))
 
 
 # helper class
@@ -22,6 +43,7 @@ class BaseModelWithDynamicKey(BaseModel):
     Pydantic workaoround for custom dynamic key
     ref: https://stackoverflow.com/questions/60089947/creating-pydantic-model-schema-with-dynamic-key
     """
+
     def __init__(self, **data: Any) -> None:
         if self.__custom_root_type__ and data.keys() != {ROOT_KEY}:
             data = {ROOT_KEY: data}
@@ -69,6 +91,9 @@ class Leaf(LeafABC):
     def __hash__(self) -> int:
         return hash(tuple([self.__dict__.get(attr) if not isinstance(self.__dict__.get(attr), list)
                                    else tuple(self.__dict__.get(attr)) for attr in self.hash_attrs]))
+
+    # def __hash__(self) -> int:
+    #     return make_hash(self.to_dict())
 
     __slots__ = ('__weakref__',)
 

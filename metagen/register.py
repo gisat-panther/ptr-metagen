@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from uuid import UUID
-from typing import Type, Any
+from typing import Type, Any, List
 from functools import wraps
 from warnings import warn
 from pandas import DataFrame
@@ -15,6 +15,10 @@ from metagen.base import LeafABC
 
 
 class Register(BaseModel, ABC):
+
+    @abstractmethod
+    def get_elements(self) -> List[Type[LeafABC]]:
+        pass
 
     @abstractmethod
     def add(self, element: Type[LeafABC]) -> None:
@@ -45,6 +49,9 @@ class DictRegister(Register):
     hashs: dict = Field(default_factory=dict)
     uuid: dict = Field(default_factory=dict)
     name: dict = Field(default_factory=dict)
+
+    def get_elements(self) -> List[Type[LeafABC]]:
+        return [element for element in self.hashs.values()]
 
     def add(self, element: Type[LeafABC]) -> None:
         if not self.check_register(element):
@@ -81,6 +88,9 @@ def prepare_element4pandas(element: Type[LeafABC]) -> dict:
 class PandasRegister(Register):
     table: DataFrame = Field(default_factory=DataFrame)
     element_instances: list = Field(default_factory=list)
+
+    def get_elements(self) -> List[Type[LeafABC]]:
+        return [element() for element in self.table['element'].values]
 
     def add(self, element: Type[LeafABC]) -> None:
         """Add element to register. If element hash in register rise error"""

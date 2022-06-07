@@ -238,7 +238,7 @@ class SpatialWMS(Leaf):
 
     @property
     def hash_attrs(self) -> tuple:
-        return 'url', 'layers', 'styles', 'params'
+        return 'url', 'layers', 'styles'
 
 
 @exist_in_register
