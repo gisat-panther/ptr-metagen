@@ -10,7 +10,7 @@ README = (HERE / "README.md").read_text()
 # This call to setup() does all the work
 setup(
     name="ptrmetagen",
-    version="1.0.7",
+    version="1.0.8",
     description="Package for generation of metastructures for Panter project",
     long_description=README,
     long_description_content_type="text/markdown",
