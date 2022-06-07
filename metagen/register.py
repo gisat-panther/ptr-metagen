@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from uuid import UUID
-from typing import Type, Any, List
+from typing import Type, Any, List, Union, Dict
 from functools import wraps
 from warnings import warn
 from pandas import DataFrame
@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 import weakref
 
 from metagen.base import LeafABC
-
+from metagen.config import config
 
 # TODO: Solve weak references
 
@@ -99,11 +99,10 @@ class PandasRegister(Register):
         self.table = pandas.concat([self.table, element_pd], ignore_index=True, axis=0)
 
     def check_register(self, element: Type[LeafABC])-> bool:
-        try:
-            self.get_by_hash(hash(element))
-            return True
-        except (ValueError, KeyError):
-            return False
+            if self.get_by_hash(hash(element)):
+                return True
+            else:
+                return False
 
     def get_by_name(self, name: str) -> Type[LeafABC]:
         return self.get_by_attrName(name, attrName='nameInternal')
@@ -114,15 +113,33 @@ class PandasRegister(Register):
     def get_by_uuid(self, uuid: UUID) -> Type[LeafABC]:
         return self.get_by_attrName(uuid, attrName='key')
 
-    def get_by_attrName(self, value: Any, attrName: str) -> Type[LeafABC]:
+    def get_by_attrName(self, value: Any, attrName: str) -> Union[None, Type[LeafABC]]:
         """Find element in register based on columne name and ist value """
-        filter = self.table[attrName] == value
+        try:
+            filter = self.table[attrName] == value
+        except KeyError:
+            return None
+
+        if not any(value for value in filter.values):
+            warn(f'No element found for attrName: {attrName} and value {value}')
+            return None
         return self.table.loc[filter]['element'].item()()
 
 
+class RegisterFactory(BaseModel):
+    registers: Dict[str, Type[Register]] = Field(default_factory=dict)
 
-# register = DictRegister()
-register = PandasRegister()
+    def add(self, registerName: str, registerType: Type[Register]) -> None:
+        self.registers.update({registerName: registerType})
+
+    def get(self, registerName: str) -> Type[Register]:
+        return self.registers[registerName]
+
+
+register_factory = RegisterFactory()
+register_factory.add(registerName='dict', registerType=DictRegister)
+register_factory.add(registerName='pandas', registerType=PandasRegister)
+register = register_factory.get(registerName=config.registerName)()
 
 
 def exist_in_register(element):

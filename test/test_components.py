@@ -11,6 +11,7 @@ from metagen.presets import PresetBackgroundMaps, PresetMapSynchronization, Pres
 from metagen.components import Filter
 
 
+
 @pytest.fixture(autouse=True)
 def tag():
     return Tag(**prepare_data_for_leaf(TAG_1))

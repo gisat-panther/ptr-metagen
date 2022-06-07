@@ -1,4 +1,4 @@
-from typing import Union, Type, Any, Literal, Callable, List
+from typing import Union, Type, Any, Literal, Callable, List, Optional
 from pydantic import validator, Field
 from shapely.geometry import MultiPolygon, MultiPoint, MultiLineString, shape, Polygon, Point, LineString, LinearRing
 from shapely.geometry.base import BaseMultipartGeometry
@@ -7,6 +7,8 @@ from warnings import warn
 
 from metagen.base import BaseModelArbitrary
 
+# TODO: Geometry for raster
+# TODO: Solve buffer for the case of single line or two points
 
 @dataclass
 class ShapeCollection:
@@ -46,8 +48,17 @@ def polygon(interface: dict) -> Polygon:
     return shape(interface)
 
 
+def multipolygon(interface: dict) -> Polygon:
+    return shape(interface).convex_hull
+
+
+def point(interface: dict) -> Polygon:
+    return shape(interface).convex_hull
+
+
 convert_func = {'FeatureCollection': feature_collection,
                 'Polygon': polygon,
+                'MultiPolygon': multipolygon,
                 'GeometryCollection': geometry_collection}
 
 
@@ -56,7 +67,8 @@ class Geometry(BaseModelArbitrary):
     Helper class to extract geometry from inpur geodata.
     input:
         data: any type that have __geo_interface__ like shaply, geopandas etc. Works for geometry types
-        FeatureCollection, Multipolygons, Polygon, Point. It do not works for heterogenic collection of shapes
+        FeatureCollection, GeometryCollections, Multipolygons, Polygon, . It do not works for heterogenic collection of shapes
+
     """
     data: Any
 

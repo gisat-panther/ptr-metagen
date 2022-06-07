@@ -40,6 +40,10 @@ def test_pandas_register_get_by_name(pandas_register, layer_template_2):
     assert pandas_register.get_by_name(layer_template_2.nameInternal) == layer_template_2
 
 
-def test_pandas_register_get_by_name(pandas_register, layer_template_2):
+def test_pandas_register_check_register(pandas_register, layer_template_2):
     assert pandas_register.check_register(layer_template_2) is True
     assert pandas_register.check_register(uuid4()) is False
+
+
+def test_pandas_register_unknow_value(pandas_register):
+    assert pandas_register.get_by_name('bla') is None

@@ -62,6 +62,10 @@ def test_geometry_from_polygon(polygon1):
     assert geom.geometry() == polygon1.convex_hull.__geo_interface__
 
 
+def test_geometry_from_multipolygon(multipolygon):
+    geom = Geometry(data=multipolygon)
+    assert geom.geometry() == multipolygon.convex_hull.__geo_interface__
+
 # test Colletion
 def test_collection_poly(polygon1, polygon2, polygon3, multipolygon):
     collection = ShapeCollection([polygon1, polygon2, polygon3])
