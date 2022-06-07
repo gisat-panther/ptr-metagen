@@ -5,7 +5,7 @@ from typing import Union, List
 import json
 
 from metagen.base import Leaf
-from metagen.utils import create_file, check_path, open_json, UUIDEncoder
+from metagen.helpers import create_file, check_path, open_json, UUIDEncoder
 from metagen.metadata import ElementFactory, element_factory
 from metagen.register import register, Register
 
@@ -26,7 +26,7 @@ class JSONSerializer(Serializer):
     structure: dict = Field(default={})
 
     def to_dict(self) -> dict:
-        for _, element in register.hashs.items():
+        for element in register.get_elements():
             nodes = element.__nodes__().split('.')
             self.set_node(self.structure, nodes, element)
         return self.structure
@@ -96,6 +96,7 @@ class Generator(GeneratorABC):
     serializer: Serializer = Field(default=JSONSerializer())
     deserializer: DeSerializer = Field(default=JSONDeserializer())
 
+    @property
     def register(self) -> Register:
         return register
 

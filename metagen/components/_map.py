@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field, validator
 from typing import Optional, Dict, List, Union
 from metagen.base import BaseModelWithDynamicKey
 from metagen.presets import PresetBackgroundMaps, PresetMapSynchronization, PresetMapSettingView, Preset
-from metagen.components._general import BaseModelArbitrary
+from metagen.base import BaseModelArbitrary
 
 
 class MapDefinitions(BaseModel):

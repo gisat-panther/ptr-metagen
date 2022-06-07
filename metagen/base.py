@@ -1,7 +1,7 @@
 # general and helper function and classe
 
 from typing import Union, Optional, Any, List
-from pydantic import BaseModel, Field, root_validator
+from pydantic import BaseModel, Field, root_validator, PrivateAttr
 from pydantic.utils import ROOT_KEY
 from abc import ABC, abstractmethod
 from uuid import UUID, uuid4
@@ -22,15 +22,23 @@ class BaseModelWithDynamicKey(BaseModel):
     Pydantic workaoround for custom dynamic key
     ref: https://stackoverflow.com/questions/60089947/creating-pydantic-model-schema-with-dynamic-key
     """
+
     def __init__(self, **data: Any) -> None:
         if self.__custom_root_type__ and data.keys() != {ROOT_KEY}:
             data = {ROOT_KEY: data}
         super().__init__(**data)
 
 
+class BaseModelArbitrary(BaseModel):
+    pass
+
+    class Config:
+        arbitrary_types_allowed = True
+
+
+# model classes
 class LeafABC(BaseModel, ABC):
-    key: UUID
-    _input_pars: List[str] = Field(default_factory=list)
+    key: Optional[UUID]
 
     @abstractmethod
     def __nodes__(self) -> str:
@@ -41,16 +49,21 @@ class LeafABC(BaseModel, ABC):
     def hash_attrs(self) -> tuple:
         pass
 
-    class Config:
-        fields = {'_input_pars': {'exclude': True}}
-
 
 # element
 class Leaf(LeafABC):
     key: Optional[Union[UUID, str]] = Field(default_factory=uuid4)
+    _input_pars: List[str] = PrivateAttr()
+
+    def __init__(self, **data):
+        super().__init__(**data)
+        self._input_pars = [k for k in data.keys()]
 
     def to_dict(self):
-        data = self.dict(by_alias=True, exclude_none=True)
+        include = {k for k, v in self.__dict__.items() if k in self._input_pars or v is not None}
+        exlude = {k for k in self.__dict__.keys()} - include
+
+        data = self.dict(by_alias=True, exclude=exlude, include=include)
         key = data.pop('key')
         return {"key": str(key), "data": data}
 
@@ -65,6 +78,14 @@ class Leaf(LeafABC):
     def __hash__(self) -> int:
         return hash(tuple([self.__dict__.get(attr) if not isinstance(self.__dict__.get(attr), list)
                                    else tuple(self.__dict__.get(attr)) for attr in self.hash_attrs]))
+
+    # def __hash__(self) -> int:
+    #     return make_hash(self.to_dict())
+
+    __slots__ = ('__weakref__',)
+
+    # class Config:
+    #     fields = {'_input_pars': {'exclude': True}}
 
 
 def set_key_from_input(value: Union[str, UUID, Leaf]):
