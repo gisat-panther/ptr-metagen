@@ -14,4 +14,4 @@ def load_config(path: str) -> Config:
         return Config(**data)
 
 
-config = load_config(Path(__file__).parent.parent / 'config.yaml')
+config = load_config(Path(__file__).parent / 'config.yaml')
