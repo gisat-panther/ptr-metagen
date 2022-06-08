@@ -10,7 +10,7 @@ README = (HERE / "README.md").read_text()
 # This call to setup() does all the work
 setup(
     name="ptrmetagen",
-    version="1.1.3",
+    version="1.1.4",
     description="Package for generation of metastructures for Panter project",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -23,5 +23,6 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.9"],
     packages=["metagen", "metagen.components", "metagen.utils"],
-    include_package_data=True,
+    package_data = {'': ['config.yaml']},
+    include_package_data=True
     )
