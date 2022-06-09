@@ -16,20 +16,16 @@ class ShapeCollection:
 
     @property
     def type(self):
-        geom_type = set([shape.type for shape in self.collection])
-        if len(geom_type) == 1:
-            return geom_type.pop()
-        else:
-            raise ValueError(f'Geometry collection is heterogenus. Multiple geometry types {geom_type}')
+        return set([shape.type for shape in self.collection])
 
     @property
     def convex_hull(self) -> Polygon:
         """Return convex hull of the collection"""
-        if self.type in ['Polygon', 'MultiPolygon']:
+        if self.type.issubset({'Polygon', 'MultiPolygon'}):
             return MultiPolygon(self.collection).convex_hull
-        elif self.type in ['LineString', 'MultiLineString', 'LinearRing']:
+        elif  self.type.issubset({'LineString', 'MultiLineString', 'LinearRing'}):
             return MultiLineString(self.collection).convex_hull
-        elif self.type in ['Point', 'MultiPoint']:
+        elif self.type.issubset({'Point', 'MultiPoint'}):
             return MultiPoint(self.collection).convex_hull
 
 

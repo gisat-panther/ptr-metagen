@@ -12,6 +12,7 @@ from metagen.base import LeafABC
 from metagen.config import config
 
 # TODO: Solve weak references
+# TODO: Element look up for pandas
 
 
 class Register(BaseModel, ABC):
@@ -22,6 +23,10 @@ class Register(BaseModel, ABC):
 
     @abstractmethod
     def add(self, element: Type[LeafABC]) -> None:
+        pass
+
+    @abstractmethod
+    def update(self, attrName: str, value: Any)-> None:
         pass
 
     @abstractmethod
@@ -62,6 +67,9 @@ class DictRegister(Register):
             raise ValueError(f'PTR element "{element.__class__.__name__}" with nameInternal: {element.nameInternal}, '
                              f'key: {element.key} and hash: {hash(element)} already exist')
 
+    def update(self, attrName: str, value: Any)-> None:
+        raise NotImplementedError()
+
     def check_register(self, element: Type[LeafABC]) -> bool:
         return all([self.hashs.get(hash(element)), self.name.get(element.nameInternal)])
 
@@ -97,6 +105,9 @@ class PandasRegister(Register):
         self.element_instances.append(element)
         element_pd = DataFrame(prepare_element4pandas(element), index=['key'])
         self.table = pandas.concat([self.table, element_pd], ignore_index=True, axis=0)
+
+    def update(self, attrName: str, value: Any):
+        raise NotImplementedError()
 
     def check_register(self, element: Type[LeafABC])-> bool:
             if self.get_by_hash(hash(element)):

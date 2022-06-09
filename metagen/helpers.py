@@ -5,9 +5,6 @@ from uuid import UUID
 import copy
 
 
-from metagen.base import BaseModelArbitrary
-
-
 # helper functions
 def create_file(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)

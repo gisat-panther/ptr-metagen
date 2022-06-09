@@ -2,11 +2,11 @@ import pytest
 
 from metagen.metadata import Application, LayerTemplate
 
+
 def test_element_duplicity():
     lt1 = LayerTemplate(applicationKey='app', nameInternal=f'lt', nameDisplay='lt')
     lt2 = LayerTemplate(applicationKey='app', nameInternal=f'lt', nameDisplay='lt')
     assert lt1.key == lt2.key
-
 
 
 def test_stac_attribute_in_leaf():
@@ -28,3 +28,10 @@ def test_to_dict():
     data = lt_dict.get('data')
     assert all([k in ['applicationKey', 'nameInternal'] for k in data.keys()])
     assert data.get('applicationKey') is None
+
+
+def test_refresh_hash():
+    lt1 = LayerTemplate(applicationKey='app_test', nameInternal=f'lt', nameDisplay='lt')
+    lt2 = LayerTemplate(applicationKey='app', nameInternal=f'lt', nameDisplay='lt')
+    lt2.nameDisplay= 'app_test'
+    assert hash(lt1) == hash(lt2)

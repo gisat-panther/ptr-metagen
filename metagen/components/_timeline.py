@@ -1,9 +1,9 @@
 from pydantic import BaseModel, Field, validator
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Type
 from uuid import UUID
 from datetime import datetime
 
-from metagen.base import Leaf, set_key_from_input
+from metagen.base import LeafABC, set_key_from_input
 from metagen.components._general import Component
 from metagen.components._general import Filter
 
@@ -21,15 +21,15 @@ class TimelinePeriod(BaseModel):
 
 
 class LayerState(BaseModel):
-    layerTemplateKey: Union[str, UUID, Leaf]
-    styleKey: Optional[Union[str, UUID, Leaf]]
+    layerTemplateKey: Union[str, UUID, Type[LeafABC]]
+    styleKey: Optional[Union[str, UUID, Type[LeafABC]]]
     filterByActive: dict = Field(default={"application": True})
 
     _set_key = validator('layerTemplateKey', pre=True, allow_reuse=True)(set_key_from_input)
 
 
 class TimelineLegend(BaseModel):
-    layerTemplateKey: Union[str, UUID, Leaf]
+    layerTemplateKey: Union[str, UUID, Type[LeafABC]]
 
     _set_key = validator('layerTemplateKey', pre=True, allow_reuse=True)(set_key_from_input)
 
@@ -45,7 +45,7 @@ class TimelineItem(BaseModel):
     layerState: LayerState
 
     @classmethod
-    def set_by_layerTemplate(cls, mapZIndex: int, layerTemplate: Leaf, style: Optional[Leaf] = None):
+    def set_by_layerTemplate(cls, mapZIndex: int, layerTemplate: Type[LeafABC], style: Optional[Type[LeafABC]] = None):
         filter = Filter.set('layerTemplateKey', layerTemplate)
         periods = TimelineItemPeriod(filter=filter)
         layerstate = LayerState(layerTemplateKey=layerTemplate, styleKey=style)
@@ -97,7 +97,7 @@ class Timeline(Component):
         elif isinstance(timelineLayer, list):
             self.timelineLayers += timelineLayer
 
-    def set_timelineLayer_by_layerTemplate(self, legend: Leaf, items: List[Leaf] ):
+    def set_timelineLayer_by_layerTemplate(self, legend: Type[LeafABC], items: List[Type[LeafABC]] ):
         """
         Work around to set and ad timelineLayer by layerTempalte. LayerTemplates as items are add into the timiline
         layer in order of the layertemplates listd. mapZindex is made in same order

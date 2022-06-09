@@ -1,10 +1,10 @@
 from pydantic import BaseModel, Field
 from abc import ABC, abstractmethod, ABCMeta
 from pathlib import Path
-from typing import Union, List
+from typing import Union, List, Type
 import json
 
-from metagen.base import Leaf
+from metagen.base import LeafABC
 from metagen.helpers import create_file, check_path, open_json, UUIDEncoder
 from metagen.metadata import ElementFactory, element_factory
 from metagen.register import register, Register
@@ -31,7 +31,7 @@ class JSONSerializer(Serializer):
             self.set_node(self.structure, nodes, element)
         return self.structure
 
-    def set_node(self, structure: dict, nodes: list, element: Leaf):
+    def set_node(self, structure: dict, nodes: list, element: Type[LeafABC]):
         node = nodes.pop(0)
         if len(nodes) > 0:
             if not structure.get(node):
@@ -109,24 +109,24 @@ class Generator(GeneratorABC):
     def to_json(self, path: Union[str, Path]) -> None:
         self.serializer.to_json(path)
 
-    def get_element_by_nameInternal(self, name: str) -> Leaf:
+    def get_element_by_nameInternal(self, name: str) -> Type[LeafABC]:
         """Return element of given nameInternal"""
         if self.register.get_by_name(name):
             return self.register.get_by_name(name)
         else:
             raise ValueError(f'Element with nameInternal {name} did not find')
 
-    def get_element_by_uuid(self, uuid: str) -> Leaf:
+    def get_element_by_uuid(self, uuid: str) -> Type[LeafABC]:
         """Return element of given uuid"""
         if register.get_by_uuid(uuid):
             return register.get_by_uuid(uuid)
         else:
             raise ValueError(f'Element with uuid {uuid} did not find')
 
-    def get_elements_by_type(self, element: Leaf) -> List[Leaf]:
+    def get_elements_by_type(self, element: Type[LeafABC]) -> List[Type[LeafABC]]:
         """Return list of all elements of given element type"""
         return [v for k, v in self.register.name.items() if isinstance(v, element.__wrapped__)]
 
-    def get_elements_by_name(self, name: str) -> List[Leaf]:
+    def get_elements_by_name(self, name: str) -> List[Type[LeafABC]]:
         """Return list of elements that internal name contains part of input string"""
         return [v for k, v in self.register.name.items() if k.__contains__(name)]
