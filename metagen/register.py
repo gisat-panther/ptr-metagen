@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from uuid import UUID
 from typing import Type, Any, List, Union, Dict
-from functools import wraps
 from warnings import warn
 from pandas import DataFrame
 import pandas
@@ -9,7 +8,6 @@ from pydantic import BaseModel, Field
 import weakref
 
 from metagen.base import LeafABC
-from metagen.config import config
 
 # TODO: Solve weak references
 # TODO: Element look up for pandas
@@ -150,20 +148,3 @@ class RegisterFactory(BaseModel):
 register_factory = RegisterFactory()
 register_factory.add(registerName='dict', registerType=DictRegister)
 register_factory.add(registerName='pandas', registerType=PandasRegister)
-register = register_factory.get(registerName=config.registerName)()
-
-
-def exist_in_register(element):
-    @wraps(element)
-    def checking_register(*args, **kwargs):
-        instance = element(*args, **kwargs)
-        if register.check_register(instance):
-            registered_element = register.get_by_hash(hash(instance))
-            warn(f'Element duplication: Element {instance.__class__.__name__} with parameters: '
-                 f'{"; ".join([f"{k}: {v}" for k, v in kwargs.items()])} found in register. Element '
-                 f'{registered_element.__repr__()} returned instead')
-            return registered_element
-        else:
-            register.add(instance)
-            return instance
-    return checking_register

@@ -1,10 +1,10 @@
 # general and helper function and classe
 
-from typing import Union, Optional, Any, List, Type
-from pydantic import BaseModel, Field, root_validator, PrivateAttr
+from typing import Union, Optional, Any, Type
+from pydantic import BaseModel
 from pydantic.utils import ROOT_KEY
 from abc import ABC, abstractmethod
-from uuid import UUID, uuid4
+from uuid import UUID
 
 
 # helper class

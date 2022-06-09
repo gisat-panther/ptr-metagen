@@ -7,7 +7,8 @@ import json
 from metagen.base import LeafABC
 from metagen.helpers import create_file, check_path, open_json, UUIDEncoder
 from metagen.metadata import ElementFactory, element_factory
-from metagen.register import register, Register
+from metagen.register import Register
+from metagen.main import register
 
 
 # serialization & deserialization

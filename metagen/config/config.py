@@ -4,6 +4,8 @@ from typing import Literal
 from pathlib import Path
 
 
+BASE_CONFIF_FILE = Path(__file__).parent / 'config.yaml'
+
 class Config(BaseModel):
     registerName: Literal['pandas', 'dict']
 
@@ -14,4 +16,3 @@ def load_config(path: str) -> Config:
         return Config(**data)
 
 
-config = load_config(Path(__file__).parent / 'config.yaml')

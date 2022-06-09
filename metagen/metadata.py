@@ -6,9 +6,9 @@ from inspect import signature
 from uuid import UUID, uuid4
 
 from metagen.base import LeafABC
-from metagen.helpers import prepare_data_for_leaf
+from metagen.helpers import prepare_data_for_leaf, exist_in_register
 from metagen.components import State
-from metagen.register import exist_in_register, register
+from metagen.main import register
 
 
 # TODO: set validation in assigment based on annotation __annotations__[attrName].__args__
@@ -45,7 +45,7 @@ class Leaf(LeafABC):
 
     def __setattr__(self, attrName, value):
         super(Leaf, self).__setattr__(attrName, value)
-        register.update(attrName, value)
+        # register.update(attrName, value)
 
     __slots__ = ('__weakref__',)
 

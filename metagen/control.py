@@ -1,6 +1,6 @@
 from typing import Type
 
-from metagen.register import register
+from metagen.main import register
 from metagen.base import LeafABC
 
 
