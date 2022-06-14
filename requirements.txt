@@ -5,3 +5,4 @@ setuptools==58.5.3
 Shapely==1.8.1
 pandas==1.2.3
 PyYAML==5.4.1
+click==7.1.2

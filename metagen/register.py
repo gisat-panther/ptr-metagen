@@ -141,7 +141,7 @@ class RegisterFactory(BaseModel):
     def add(self, registerName: str, registerType: Type[Register]) -> None:
         self.registers.update({registerName: registerType})
 
-    def get(self, registerName: str) -> Type[Register]:
+    def get(self, registerName: str, **ignore) -> Type[Register]:
         return self.registers[registerName]
 
 

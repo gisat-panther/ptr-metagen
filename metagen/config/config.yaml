@@ -1,1 +1,5 @@
-registerName: pandas
+register_setting:
+  registerName: pandas
+importer_setting:
+  path: null
+  instance_url: null

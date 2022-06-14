@@ -1,6 +1,6 @@
-from metagen.config.config import load_config, BASE_CONFIF_FILE
+from metagen.config.config import load_yaml, BASE_CONFIG_FILE, Config
 from metagen.register import register_factory
 
 
-CONFIG = load_config(BASE_CONFIF_FILE)
-register = register_factory.get(registerName=CONFIG.registerName)()
+CONFIG = Config(**load_yaml(BASE_CONFIG_FILE))
+register = register_factory.get(CONFIG.register_setting.registerName)()

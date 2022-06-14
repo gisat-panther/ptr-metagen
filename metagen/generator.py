@@ -99,15 +99,19 @@ class Generator(GeneratorABC):
 
     @property
     def register(self) -> Register:
+        """Element Register Access """
         return register
 
     def load_fixtures(self, path: Path, encoding='utf8') -> None:
+        """Load fixtures into the register"""
         self.deserializer.load(path, encoding=encoding)
 
     def to_dict(self) -> dict:
+        """Generate dict representation of fixtures from register"""
         return self.serializer.to_dict()
 
     def to_json(self, path: Union[str, Path]) -> None:
+        """Generate json representation of fixtures from register"""
         self.serializer.to_json(path)
 
     def get_element_by_nameInternal(self, name: str) -> Type[LeafABC]:
