@@ -8,7 +8,6 @@ from uuid import UUID, uuid4
 from metagen.base import LeafABC
 from metagen.helpers import prepare_data_for_leaf, exist_in_register
 from metagen.components import State
-from metagen.main import register
 
 
 # TODO: set validation in assigment based on annotation __annotations__[attrName].__args__

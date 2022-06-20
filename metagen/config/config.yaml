@@ -1,5 +1,6 @@
 register_setting:
   registerName: pandas
 importer_setting:
-  path: null
-  instance_url: null
+  path: C:\michal\gisat\be-metadata-importer
+  instance_url: https://visat-dev.gisat.cz/backend/rest/
+  host: http://localhost:9000/metadata

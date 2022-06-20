@@ -1,6 +1,6 @@
 import pathlib
 from setuptools import setup
-from  metagen import __version__
+from metagen import __version__
 
 # The directory containing this file
 HERE = pathlib.Path(__file__).parent

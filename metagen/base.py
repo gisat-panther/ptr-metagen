@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from pydantic.utils import ROOT_KEY
 from abc import ABC, abstractmethod
 from uuid import UUID
+import json
 
 
 # helper class
@@ -60,3 +61,13 @@ def set_key_from_input(value: Union[str, UUID, Type[LeafABC]]):
     if isinstance(value, str):
         return UUID(value)
     return value
+
+
+# helper class
+class UUIDEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, UUID):
+            # if the obj is uuid, we simply return the value of uuid
+            return str(obj)
+        return json.JSONEncoder.default(self, obj)
+

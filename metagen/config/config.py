@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, Field, AnyUrl
 import yaml
 from typing import Literal, Optional
 from pathlib import Path
@@ -6,18 +6,19 @@ from pathlib import Path
 BASE_CONFIG_FILE = Path(__file__).parent / 'config.yaml'
 
 
-class Register(BaseModel):
+class RegisterConfig(BaseModel):
     registerName: Literal['pandas', 'dict']
 
 
-class Importer(BaseModel):
+class ImporterConfig(BaseModel):
     path: Optional[Path]
-    instance_url: Optional[HttpUrl]
+    instance_url: Optional[AnyUrl]
+    host: Optional[AnyUrl]
 
 
 class Config(BaseModel):
-    register_setting: Register = Field(default_factory=Register)
-    importer_setting: Importer = Field(default_factory=Importer)
+    register_setting: RegisterConfig = Field(default_factory=RegisterConfig)
+    importer_setting: ImporterConfig = Field(default_factory=ImporterConfig)
 
 
 def load_yaml(path: str) -> Config:

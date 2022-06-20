@@ -1,14 +1,16 @@
 from pydantic import BaseModel, Field
-from abc import ABC, abstractmethod, ABCMeta
+from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Union, List, Type
 import json
 
-from metagen.base import LeafABC
-from metagen.helpers import create_file, check_path, open_json, UUIDEncoder
+from metagen.base import LeafABC, UUIDEncoder
+from metagen.helpers import create_file, open_json
+from metagen.pipes import path_check
 from metagen.metadata import ElementFactory, element_factory
 from metagen.register import Register
-from metagen.main import register
+from metagen.main import register, CONFIG
+from metagen.importer import ImporterABC, Importer
 
 
 # serialization & deserialization
@@ -46,7 +48,7 @@ class JSONSerializer(Serializer):
     def to_json(self, path: Union[Path, str]) -> None:
         structure = self.to_dict()
 
-        path = check_path(path)
+        path = path_check(path)
 
         if not path.parent:
             create_file(path.parent)
@@ -58,16 +60,16 @@ class JSONSerializer(Serializer):
 class DeSerializer(BaseModel, ABC):
 
     @abstractmethod
-    def load(self, path: Path, **kwargs) -> None:
+    def load(self, path: Union[Path, str], **kwargs) -> None:
         pass
 
 
 class JSONDeserializer(DeSerializer):
     factory: ElementFactory = Field(default=element_factory)
 
-    def load(self, path: Path, encoding='utf8') -> None:
+    def load(self, path: Union[Path, str], encoding='utf8') -> None:
 
-        path = check_path(path)
+        path = path_check(path)
         obj = open_json(path, encoding)
         for node, structure in obj.items():
             self._parse(node, structure)
@@ -86,23 +88,36 @@ class JSONDeserializer(DeSerializer):
 class GeneratorABC(BaseModel, ABC):
     serializer: Serializer
     deserializer: DeSerializer
+    importer: ImporterABC
 
     @property
     @abstractmethod
     def register(self) -> Register:
         pass
 
+    @abstractmethod
+    def import_fixtures(self) -> dict:
+        pass
+
+    class Config:
+        arbitrary_types_allowed = True
+
+
 
 class Generator(GeneratorABC):
     serializer: Serializer = Field(default=JSONSerializer())
     deserializer: DeSerializer = Field(default=JSONDeserializer())
+    importer: ImporterABC = Field(default=Importer(**CONFIG.importer_setting.dict()))
 
     @property
     def register(self) -> Register:
         """Element Register Access """
         return register
 
-    def load_fixtures(self, path: Path, encoding='utf8') -> None:
+    def import_fixtures(self) -> dict:
+        return self.importer.run(self.to_dict())
+
+    def load_fixtures(self, path: Union[Path, str], encoding='utf8') -> None:
         """Load fixtures into the register"""
         self.deserializer.load(path, encoding=encoding)
 

@@ -1,23 +1,59 @@
 import json
+from abc import ABC
 from pathlib import Path
-from typing import Union
+from typing import Union, Any, Callable
 from uuid import UUID
 import copy
 from functools import wraps
 from warnings import warn
+from dataclasses import dataclass, field
 
 from metagen.main import register
 
+
+# helpe class to define and create pipileines
+@dataclass
+class Process(ABC):
+    """Abstrac factory for processes"""
+
+    @classmethod
+    def __call__(self, *args, **kwargs):
+        pass
+
+
+class PipeMeta(type):
+    def __new__(cls, clsname: str, superclasses: tuple, clsdict: dict):
+        stac = [value for attr, value in clsdict.items() if (isinstance(value, (Process, Callable)))
+                and (not attr.__contains__('__'))]
+        clsdict.update(stac=stac)
+        return super().__new__(cls, clsname, superclasses, clsdict)
+
+
+class Pipe(metaclass=PipeMeta):
+
+    def __call__(self, value) -> Any:
+        current = value
+        for method in self.stac:
+            current = method(current)
+        return current
 
 # helper functions
 def create_file(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
 
 
-def check_path(path: Union[Path, str]) -> Path:
+def str2Path(path: Union[Path, str]) -> Path:
     if not isinstance(path, Path):
         return Path(path)
     return path
+
+
+def is_exist(obj: Any) -> Any:
+    if not hasattr(obj, 'exists'):
+        raise AttributeError(f'Object {obj} has not method ')
+    if not obj.exists():
+        raise ValueError(f'{obj} does not exist')
+    return obj
 
 
 def prepare_data_for_leaf(obj: dict) -> dict:
@@ -50,15 +86,6 @@ def make_hash(o):
         new_o[k] = make_hash(v)
 
     return hash(tuple(frozenset(sorted(new_o.items()))))
-
-
-# helper class
-class UUIDEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, UUID):
-            # if the obj is uuid, we simply return the value of uuid
-            return str(obj)
-        return json.JSONEncoder.default(self, obj)
 
 
 # helpers dacoratoes
