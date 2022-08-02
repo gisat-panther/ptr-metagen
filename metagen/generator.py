@@ -4,17 +4,15 @@ from pathlib import Path
 from typing import Union, List, Type
 import json
 
-from metagen.base import LeafABC, UUIDEncoder
-from metagen.helpers import create_file, open_json
+from metagen.base import LeafABC, UUIDEncoder, FactoryABC
+from metagen.helpers import create_file, load_json
 from metagen.pipes import path_check
-from metagen.metadata import ElementFactory, element_factory
-from metagen.register import Register
-from metagen.main import register, CONFIG
-from metagen.importer import ImporterABC, Importer
+from metagen.register import RegisterABC
+from metagen.importer import ImporterABC
 
 
 # serialization & deserialization
-class Serializer(BaseModel, ABC):
+class SerializerABC(BaseModel, ABC):
 
     @abstractmethod
     def to_dict(self):
@@ -25,11 +23,12 @@ class Serializer(BaseModel, ABC):
         pass
 
 
-class JSONSerializer(Serializer):
+class JSONSerializer(SerializerABC):
+    reg: RegisterABC
     structure: dict = Field(default={})
 
     def to_dict(self) -> dict:
-        for element in register.get_elements():
+        for element in self.reg.get_elements():
             nodes = element.__nodes__().split('.')
             self.set_node(self.structure, nodes, element)
         return self.structure
@@ -57,20 +56,20 @@ class JSONSerializer(Serializer):
             json.dump(structure, file, indent=6, cls=UUIDEncoder)
 
 
-class DeSerializer(BaseModel, ABC):
+class DeSerializerABC(BaseModel, ABC):
+    factory: FactoryABC
 
     @abstractmethod
     def load(self, path: Union[Path, str], **kwargs) -> None:
         pass
 
 
-class JSONDeserializer(DeSerializer):
-    factory: ElementFactory = Field(default=element_factory)
+class JSONDeserializer(DeSerializerABC):
 
     def load(self, path: Union[Path, str], encoding='utf8') -> None:
 
         path = path_check(path)
-        obj = open_json(path, encoding)
+        obj = load_json(path, encoding)
         for node, structure in obj.items():
             self._parse(node, structure)
 
@@ -81,19 +80,15 @@ class JSONDeserializer(DeSerializer):
                 self._parse(f'{nodes}.{node}', structure)
         elif isinstance(obj, list):
             for data in obj:
-                self.factory.create_element(nodes, data)
+                self.factory.create(nodes, data)
 
 
 # generator
 class GeneratorABC(BaseModel, ABC):
-    serializer: Serializer
-    deserializer: DeSerializer
+    serializer: SerializerABC
+    deserializer: DeSerializerABC
     importer: ImporterABC
-
-    @property
-    @abstractmethod
-    def register(self) -> Register:
-        pass
+    reg: RegisterABC
 
     @abstractmethod
     def import_fixtures(self) -> dict:
@@ -103,16 +98,11 @@ class GeneratorABC(BaseModel, ABC):
         arbitrary_types_allowed = True
 
 
-
-class Generator(GeneratorABC):
-    serializer: Serializer = Field(default=JSONSerializer())
-    deserializer: DeSerializer = Field(default=JSONDeserializer())
-    importer: ImporterABC = Field(default=Importer(**CONFIG.importer_setting.dict()))
-
-    @property
-    def register(self) -> Register:
-        """Element Register Access """
-        return register
+class _Generator(GeneratorABC):
+    serializer: SerializerABC
+    deserializer: DeSerializerABC
+    importer: ImporterABC
+    reg: RegisterABC
 
     def import_fixtures(self) -> dict:
         return self.importer.run(self.to_dict())
@@ -131,22 +121,22 @@ class Generator(GeneratorABC):
 
     def get_element_by_nameInternal(self, name: str) -> Type[LeafABC]:
         """Return element of given nameInternal"""
-        if self.register.get_by_name(name):
-            return self.register.get_by_name(name)
+        if self.reg.get_by_name(name):
+            return self.reg.get_by_name(name)
         else:
             raise ValueError(f'Element with nameInternal {name} did not find')
 
     def get_element_by_uuid(self, uuid: str) -> Type[LeafABC]:
         """Return element of given uuid"""
-        if register.get_by_uuid(uuid):
-            return register.get_by_uuid(uuid)
+        if self.reg.get_by_uuid(uuid):
+            return self.reg.get_by_uuid(uuid)
         else:
             raise ValueError(f'Element with uuid {uuid} did not find')
 
     def get_elements_by_type(self, element: Type[LeafABC]) -> List[Type[LeafABC]]:
         """Return list of all elements of given element type"""
-        return [v for k, v in self.register.name.items() if isinstance(v, element.__wrapped__)]
+        return [v for k, v in self.reg.name.items() if isinstance(v, element.__wrapped__)]
 
     def get_elements_by_name(self, name: str) -> List[Type[LeafABC]]:
         """Return list of elements that internal name contains part of input string"""
-        return [v for k, v in self.register.name.items() if k.__contains__(name)]
+        return [v for k, v in self.reg.name.items() if k.__contains__(name)]

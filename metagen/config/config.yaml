@@ -1,5 +1,5 @@
 register_setting:
-  registerName: pandas
+  registerName: dict
 importer_setting:
   path: C:\michal\gisat\be-metadata-importer
   instance_url: https://visat-dev.gisat.cz/backend/rest/

@@ -9,7 +9,7 @@ from ._view import ViewComponent
 from ._general import Filter, Component
 
 
-class StateComponents(BaseModel):
+class StateComponents(Component):
     View: Optional[ViewComponent]
     Timeline: Optional[Timeline]
 
@@ -19,7 +19,7 @@ class StateComponents(BaseModel):
                 setattr(self, k, component)
 
 
-class State(BaseModel):
+class State(Component):
     maps: Optional[Maps]
     components: Optional[StateComponents] = Field(default_factory=StateComponents)
 
@@ -28,6 +28,7 @@ class State(BaseModel):
 
     def add_component(self, component: Component):
         self.components.add_component(component)
+
 
 
 

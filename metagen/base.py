@@ -51,6 +51,17 @@ class LeafABC(BaseModel, ABC):
         pass
 
 
+class FactoryABC(BaseModel, ABC):
+
+    @classmethod
+    def add(self, element: Any) -> None:
+        pass
+
+    @classmethod
+    def create(self, nodes: str, data: dict) -> Any:
+        pass
+
+
 def set_key_from_input(value: Union[str, UUID, Type[LeafABC]]):
     """
     Helper method used as validator in pydantic model.

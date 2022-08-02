@@ -4,10 +4,14 @@ from abc import ABC
 from pydantic import BaseModel
 
 from metagen.base import LeafABC, BaseModelWithDynamicKey, set_key_from_input
+from metagen.helpers import make_hash
 
 
 class Component(BaseModel, ABC):
     pass
+
+    def __hash__(self) -> int:
+        return make_hash(self.dict())
 
 
 class Filter(BaseModelWithDynamicKey):

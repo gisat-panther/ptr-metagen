@@ -1,16 +1,15 @@
 from pydantic import BaseModel, Field, root_validator, validator, PrivateAttr
 from typing import Optional, Union, List, Literal, Tuple, Type
 from pathlib import Path
-import geopandas as gpd
 from inspect import signature
 from uuid import UUID, uuid4
 
-from metagen.base import LeafABC
-from metagen.helpers import prepare_data_for_leaf, exist_in_register
+from metagen.base import LeafABC, FactoryABC
+from metagen.helpers import prepare_data_for_leaf, make_hash, validate_list_uuid
 from metagen.components import State
+from metagen.main import exist_in_register
 
 
-# TODO: set validation in assigment based on annotation __annotations__[attrName].__args__
 # base class
 class Leaf(LeafABC):
     key: Optional[Union[UUID, str]] = Field(default_factory=uuid4)
@@ -39,12 +38,12 @@ class Leaf(LeafABC):
         pass
 
     def __hash__(self) -> int:
-        return hash(tuple([self.__dict__.get(attr) if not isinstance(self.__dict__.get(attr), list)
-                                   else tuple(self.__dict__.get(attr)) for attr in self.hash_attrs]))
+        # return hash(tuple([self.__dict__.get(attr) if not isinstance(self.__dict__.get(attr), list)
+        #                            else tuple(self.__dict__.get(attr)) for attr in self.hash_attrs]))
+        return make_hash({k: v for k, v in self.__dict__.items() if k in self.hash_attrs})
 
     def __setattr__(self, attrName, value):
         super(Leaf, self).__setattr__(attrName, value)
-        # register.update(attrName, value)
 
     __slots__ = ('__weakref__',)
 
@@ -86,7 +85,7 @@ class Configuration(Leaf):
 
     @property
     def hash_attrs(self) -> tuple:
-        return 'applicationKey', 'nameInternal'
+        return 'applicationKey', 'data'
 
 
 @exist_in_register
@@ -95,13 +94,18 @@ class Scope(Leaf):
     nameInternal: Optional[str]
     nameDisplay: Optional[str]
     description: Optional[str]
+    tagKeys: Optional[Union[List[UUID], List[str]]]
+    configuration: Optional[dict]
+
+    _validate_tagKeys = validator('tagKeys', allow_reuse=True)(validate_list_uuid)
 
     def __nodes__(self) -> str:
         return 'metadata.scopes'
 
+    # FIXME: add hashable configuration
     @property
     def hash_attrs(self) -> tuple:
-        return 'applicationKey', 'nameDisplay'
+        return 'applicationKey', 'nameDisplay', 'tagsKey', 'configuration'
 
 
 @exist_in_register
@@ -113,15 +117,6 @@ class Place(Leaf):
     description: Optional[str]
     geometry: Optional[Union[dict, Path]]
     bbox: Optional[List[float]]
-
-    @validator('geometry')
-    # TODO: erase
-    def place_geometry(cls, v):
-        if isinstance(v, Path):
-            geodata = gpd.read_file(v)
-            if geodata.__geo_interface__.get('type') == 'FeatureCollection':
-                return geodata.__geo_interface__.get('features')[0].get('geometry')
-        return v
 
     def __nodes__(self) -> str:
         return 'metadata.places'
@@ -143,7 +138,7 @@ class LayerTemplate(Leaf):
 
     @property
     def hash_attrs(self) -> tuple:
-        return 'applicationKey', 'nameDisplay', 'nameInternal'
+        return 'applicationKey', 'nameDisplay'
 
 
 @exist_in_register
@@ -152,7 +147,7 @@ class Attribute(Leaf):
     nameInternal: Optional[str]
     nameDisplay: Optional[str]
     description: Optional[str]
-    type: Optional[Literal['number', 'text', 'bool']]
+    type: Optional[Literal['numeric', 'text', 'bool']]
     unit: Optional[str]
     valueType: Optional[str]
     color: Optional[str]
@@ -224,8 +219,7 @@ class Style(Leaf):
 
     @property
     def hash_attrs(self) -> tuple:
-        return 'nameDisplay', 'nameInternal', 'description', 'source', 'nameGeoserver', \
-               'applicationKey', 'tagKeys'
+        return 'nameDisplay', 'description', 'source', 'nameGeoserver', 'applicationKey', 'tagKeys', 'definition'
 
 
 @exist_in_register
@@ -234,7 +228,9 @@ class Tag(Leaf):
     nameDisplay: Optional[str]
     description: Optional[str]
     color: Optional[str]
-    tagKeys: Optional[List[UUID]]
+    tagKeys: Optional[Union[List[UUID], List[str]]]
+
+    _validate_tagKeys = validator('tagKeys', allow_reuse=True)(validate_list_uuid)
 
     def __nodes__(self) -> str:
         return 'metadata.tags'
@@ -279,7 +275,7 @@ class SpatialWMS(Leaf):
 
     @property
     def hash_attrs(self) -> tuple:
-        return 'url', 'layers', 'styles'
+        return 'url', 'layers', 'styles', 'params', 'configuration', 'type'
 
 
 @exist_in_register
@@ -293,7 +289,7 @@ class SpatialWMTS(Leaf):
 
     @property
     def hash_attrs(self) -> tuple:
-        return 'urls', 'types'
+        return 'urls', 'type'
 
 
 @exist_in_register
@@ -307,7 +303,7 @@ class SpatialCOG(Leaf):
 
     @property
     def hash_attrs(self) -> tuple:
-        return tuple(['url'])
+        return 'url', 'type'
 
 
 @exist_in_register
@@ -396,7 +392,7 @@ class View(Leaf):
 
     @property
     def hash_attrs(self) -> tuple:
-        return 'applicationKey', 'nameDisplay'
+        return 'applicationKey', 'nameDisplay', 'state', 'tagKeys'
 
     @validator('tagKeys', pre=True)
     def set_tagKey(cls, values):
@@ -433,7 +429,7 @@ class ElementSignature(BaseModel):
         return hash(self.parameters)
 
 
-class ElementFactory(BaseModel):
+class ElementFactory(FactoryABC, BaseModel):
     elements_register: dict = Field(default_factory=dict)
 
     def add(self, element: Type[Leaf]) -> None:
@@ -444,7 +440,7 @@ class ElementFactory(BaseModel):
 
         self.elements_register[element.__nodes__(self)].update({element_signature: element})
 
-    def create_element(self, nodes: str, data: dict) -> Leaf:
+    def create(self, nodes: str, data: dict) -> Leaf:
         element_types = self.elements_register.get(nodes)
 
         if not element_types:

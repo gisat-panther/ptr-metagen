@@ -11,14 +11,14 @@ class ImportError(Exception):
     pass
 
 
-class ImporterABC(ABC):
+class ImporterABC(BaseModel, ABC):
 
     @abstractmethod
     def run(self, fixtutres: dict) -> dict:
         pass
 
 
-class Importer(BaseModel):
+class Importer(ImporterABC):
     path: Path
     instance_url: AnyUrl
     host: AnyUrl

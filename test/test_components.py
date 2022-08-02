@@ -89,7 +89,6 @@ def test_set_view_with_timeline_by_methods(tag, layer_template_1):
     state.add_component(view_comp)
     state.add_maps(maps)
 
-
     assert View(nameInternal='test_view',
                 applicationKey='test',
                 nameDisplay='test',

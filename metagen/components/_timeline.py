@@ -15,6 +15,7 @@ from metagen.components._general import Filter
 # TODO: Hashble TimilineItem, TimelineLayers check for duplicity
 # TODO: add style definition to raster
 
+
 class TimelinePeriod(BaseModel):
     start: Union[str, datetime]
     end: Union[str, datetime]
