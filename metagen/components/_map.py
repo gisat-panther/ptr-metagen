@@ -16,12 +16,12 @@ class Map(BaseModelWithDynamicKey):
 
 
 class MapSynchronizationSetting(BaseModelArbitrary):
-    roll: bool
-    tilt: bool
-    range: bool
-    center: bool
-    heading: bool
-    boxRange: bool
+    roll: Optional[bool]
+    tilt: Optional[bool]
+    range: Optional[bool]
+    center: Optional[bool]
+    heading: Optional[bool]
+    boxRange: Optional[bool]
 
 
 class MapBackgroundLayer(BaseModelArbitrary):

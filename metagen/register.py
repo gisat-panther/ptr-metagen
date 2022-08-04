@@ -4,6 +4,7 @@ from typing import Type, Any, List, Dict
 from pydantic import BaseModel, Field
 
 from metagen.base import LeafABC
+from metagen.helpers import Singleton
 
 
 class RegisterABC(BaseModel, ABC):
@@ -41,7 +42,7 @@ class RegisterABC(BaseModel, ABC):
 
 
 # register
-class DictRegister(RegisterABC):
+class DictRegister(RegisterABC, Singleton):
     hashs: dict = Field(default_factory=dict)
     uuid: dict = Field(default_factory=dict)
     name: dict = Field(default_factory=dict)

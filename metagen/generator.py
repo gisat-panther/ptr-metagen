@@ -52,8 +52,8 @@ class JSONSerializer(SerializerABC):
         if not path.parent:
             create_file(path.parent)
 
-        with open(path, 'w') as file:
-            json.dump(structure, file, indent=6, cls=UUIDEncoder)
+        with open(path, 'w', encoding='utf-8') as file:
+            json.dump(structure, file, indent=6, cls=UUIDEncoder, ensure_ascii=False)
 
 
 class DeSerializerABC(BaseModel, ABC):

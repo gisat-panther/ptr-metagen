@@ -46,8 +46,8 @@ def str2Path(path: Union[Path, str]) -> Path:
 
 def is_exist(obj: Any) -> Any:
     if not hasattr(obj, 'exists'):
-        raise AttributeError(f'Object {obj} has not method ')
-    if not obj.exists():
+        raise AttributeError(f'Object {obj} has not "exist" method ')
+    if not obj.parent.exists():
         raise ValueError(f'{obj} does not exist')
     return obj
 
@@ -84,6 +84,8 @@ def make_hash(obj):
 
 
 def validate_list_uuid(values: Union[List[str], List[UUID]])-> List[UUID]:
+    if not values:
+        return values
     new = []
     for value in values:
         if isinstance(value, str):
@@ -93,3 +95,11 @@ def validate_list_uuid(values: Union[List[str], List[UUID]])-> List[UUID]:
         else:
             raise ValueError(f'Validation error: {value} should be UUID or UUID string representation')
     return new
+
+
+class Singleton(object):
+    _instance = None
+    def __new__(class_, *args, **kwargs):
+        if not isinstance(class_._instance, class_):
+            class_._instance = object.__new__(class_, *args, **kwargs)
+        return class_._instance

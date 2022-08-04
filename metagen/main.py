@@ -2,11 +2,13 @@ from warnings import warn
 from functools import wraps
 
 from metagen.config.config import load_yaml, BASE_CONFIG_FILE, Config
-from metagen.register import register_factory
+from metagen.register import register_factory, RegisterABC
 from metagen.generator import JSONSerializer, JSONDeserializer, _Generator
 from metagen.importer import Importer
 
 CONFIG = Config(**load_yaml(BASE_CONFIG_FILE))
+
+# register
 register = register_factory.get(CONFIG.register_setting.registerName)()
 
 
@@ -33,6 +35,7 @@ from metagen.metadata import element_factory
 deserializer = JSONDeserializer(factory=element_factory)
 importer = Importer(**CONFIG.importer_setting.dict())
 
-Generator = _Generator(serializer=serializer, deserializer=deserializer, importer=importer, reg=register)
 
+def Generator(register=register) -> _Generator:
+    return _Generator(serializer=serializer, deserializer=deserializer, importer=importer, reg=register)
 

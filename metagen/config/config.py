@@ -21,7 +21,7 @@ class Config(BaseModel):
     importer_setting: ImporterConfig = Field(default_factory=ImporterConfig)
 
 
-def load_yaml(path: str) -> Config:
+def load_yaml(path: str) -> dict:
     with open(path, 'r') as file:
         return yaml.load(file, Loader=yaml.FullLoader)
 

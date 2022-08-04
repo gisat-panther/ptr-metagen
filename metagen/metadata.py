@@ -71,7 +71,7 @@ class Application(Leaf):
 
     @property
     def hash_attrs(self) -> tuple:
-        return tuple(['name'])
+        return 'name', 'nameInternal'
 
 
 @exist_in_register
@@ -85,7 +85,7 @@ class Configuration(Leaf):
 
     @property
     def hash_attrs(self) -> tuple:
-        return 'applicationKey', 'data'
+        return 'applicationKey', 'data', 'nameInternal'
 
 
 @exist_in_register
@@ -105,7 +105,7 @@ class Scope(Leaf):
     # FIXME: add hashable configuration
     @property
     def hash_attrs(self) -> tuple:
-        return 'applicationKey', 'nameDisplay', 'tagsKey', 'configuration'
+        return 'applicationKey', 'nameDisplay', 'tagsKey', 'configuration', 'nameInternal'
 
 
 @exist_in_register
@@ -123,7 +123,7 @@ class Place(Leaf):
 
     @property
     def hash_attrs(self) -> tuple:
-        return 'applicationKey', 'nameDisplay', 'scopeKey'
+        return 'applicationKey', 'nameDisplay', 'scopeKey', 'nameInternal'
 
 
 @exist_in_register
@@ -132,13 +132,17 @@ class LayerTemplate(Leaf):
     nameInternal: Optional[str]
     nameDisplay: Optional[str]
     description: Optional[str]
+    scopeKey: Optional[Union[UUID, Leaf]]
+    tagKeys: Optional[Union[List[UUID], List[str]]]
+
+    _validate_tagKeys = validator('tagKeys', allow_reuse=True)(validate_list_uuid)
 
     def __nodes__(self) -> str:
         return 'metadata.layerTemplates'
 
     @property
     def hash_attrs(self) -> tuple:
-        return 'applicationKey', 'nameDisplay'
+        return 'applicationKey', 'nameDisplay', 'nameInternal'
 
 
 @exist_in_register
@@ -147,7 +151,7 @@ class Attribute(Leaf):
     nameInternal: Optional[str]
     nameDisplay: Optional[str]
     description: Optional[str]
-    type: Optional[Literal['numeric', 'text', 'bool']]
+    type: Optional[Literal['number', 'text', 'bool']]
     unit: Optional[str]
     valueType: Optional[str]
     color: Optional[str]
@@ -157,7 +161,7 @@ class Attribute(Leaf):
 
     @property
     def hash_attrs(self) -> tuple:
-        return 'applicationKey', 'nameDisplay', 'type'
+        return 'applicationKey', 'nameDisplay', 'type', 'nameInternal'
 
 
 @exist_in_register
@@ -185,7 +189,7 @@ class Period(Leaf):
 
     @property
     def hash_attrs(self) -> tuple:
-        return 'applicationKey', 'nameDisplay', 'period', 'start', 'end'
+        return 'applicationKey', 'nameDisplay', 'period', 'start', 'end', 'nameInternal'
 
 
 @exist_in_register
@@ -194,13 +198,16 @@ class Case(Leaf):
     nameInternal: Optional[str]
     nameDisplay: Optional[str]
     description: Optional[str]
+    tagKeys: Optional[Union[List[UUID], List[str]]]
+
+    _validate_tagKeys = validator('tagKeys', allow_reuse=True)(validate_list_uuid)
 
     def __nodes__(self) -> str:
         return 'metadata.cases'
 
     @property
     def hash_attrs(self) -> tuple:
-        return 'applicationKey', 'nameDisplay'
+        return 'applicationKey', 'nameDisplay', 'nameInternal', 'tagKeys'
 
 
 @exist_in_register
@@ -219,7 +226,8 @@ class Style(Leaf):
 
     @property
     def hash_attrs(self) -> tuple:
-        return 'nameDisplay', 'description', 'source', 'nameGeoserver', 'applicationKey', 'tagKeys', 'definition'
+        return 'nameDisplay', 'description', 'source', 'nameGeoserver', 'applicationKey', 'tagKeys', 'definition', \
+               'nameInternal'
 
 
 @exist_in_register
@@ -237,7 +245,7 @@ class Tag(Leaf):
 
     @property
     def hash_attrs(self) -> tuple:
-        return 'nameDisplay', 'tagKeys'
+        return 'nameDisplay', 'tagKeys', 'nameInternal'
 
 
 # datasource
@@ -257,7 +265,7 @@ class SpatialVector(Leaf):
 
     @property
     def hash_attrs(self) -> tuple:
-        return 'type', 'layerName', 'tableName', 'fidColumnName', 'geometryColumnName'
+        return 'type', 'layerName', 'tableName', 'fidColumnName', 'geometryColumnName', 'nameInternal'
 
 
 @exist_in_register
@@ -268,6 +276,7 @@ class SpatialWMS(Leaf):
     styles: Optional[str]
     configuration: Optional[dict]
     params: Optional[dict]
+    attribution: Optional[str]
     type: Literal['wms'] = Field(default='wms')
 
     def __nodes__(self) -> str:
@@ -275,7 +284,7 @@ class SpatialWMS(Leaf):
 
     @property
     def hash_attrs(self) -> tuple:
-        return 'url', 'layers', 'styles', 'params', 'configuration', 'type'
+        return 'url', 'layers', 'styles', 'params', 'configuration', 'type', 'attribution', 'nameInternal'
 
 
 @exist_in_register
@@ -303,7 +312,7 @@ class SpatialCOG(Leaf):
 
     @property
     def hash_attrs(self) -> tuple:
-        return 'url', 'type'
+        return 'url', 'type', 'nameInternal'
 
 
 @exist_in_register
@@ -328,7 +337,7 @@ class SpatialAttribute(Leaf):
 
     @property
     def hash_attrs(self) -> tuple:
-        return 'attribution', 'tableName', 'columnName', 'fidColumnName'
+        return 'attribution', 'tableName', 'columnName', 'fidColumnName', 'nameInternal'
 
 
 # relations
@@ -342,6 +351,7 @@ class RelationSpatial(Leaf):
     layerTemplateKey: Optional[Union[UUID, Leaf]]
     applicationKey: Optional[Union[str, Leaf]]
     caseKey: Optional[Union[UUID, Leaf]]
+    scenarioKey: Optional[Union[UUID, Leaf]]
 
     def __nodes__(self) -> str:
         return 'relations.spatial'
@@ -349,7 +359,7 @@ class RelationSpatial(Leaf):
     @property
     def hash_attrs(self) -> tuple:
         return 'scopeKey:', 'periodKey', 'placeKey', 'spatialDataSourceKey', 'layerTemplateKey', 'applicationKey', \
-               'caseKey'
+               'caseKey', 'scenarioKey', 'nameInternal'
 
 
 @exist_in_register
@@ -373,7 +383,7 @@ class RelationAttribute(Leaf):
     @property
     def hash_attrs(self) -> tuple:
         return 'scopeKey:', 'periodKey', 'placeKey', 'attributeDataSourceKey', 'layerTemplateKey', 'scenarioKey', \
-               'caseKey', 'attributeSetKey', 'attributeKey', 'areaTreeLevelKey', 'applicationKey'
+               'caseKey', 'attributeSetKey', 'attributeKey', 'areaTreeLevelKey', 'applicationKey', 'nameInternal'
 
 # views
 
@@ -392,7 +402,7 @@ class View(Leaf):
 
     @property
     def hash_attrs(self) -> tuple:
-        return 'applicationKey', 'nameDisplay', 'state', 'tagKeys'
+        return 'applicationKey', 'nameDisplay', 'state', 'tagKeys', 'nameInternal'
 
     @validator('tagKeys', pre=True)
     def set_tagKey(cls, values):
@@ -432,6 +442,7 @@ class ElementSignature(BaseModel):
 class ElementFactory(FactoryABC, BaseModel):
     elements_register: dict = Field(default_factory=dict)
 
+
     def add(self, element: Type[Leaf]) -> None:
         element_signature = ElementSignature(parameters=element)
 
@@ -440,17 +451,34 @@ class ElementFactory(FactoryABC, BaseModel):
 
         self.elements_register[element.__nodes__(self)].update({element_signature: element})
 
-    def create(self, nodes: str, data: dict) -> Leaf:
-        element_types = self.elements_register.get(nodes)
-
-        if not element_types:
+    def _get_element_types(self, nodes: str) -> dict:
+        try:
+            return self.elements_register[nodes]
+        except KeyError:
             raise NotImplementedError(f'No elements for node {nodes}')
 
-        init_data = prepare_data_for_leaf(data)
-
+    @staticmethod
+    def _find_element_by_signature(element_types: dict, init_data: dict)-> Optional[LeafABC]:
         for signature, element in element_types.items():
             if signature.check_signature(init_data):
-                return element(**init_data)
+                return element
+        return None
+
+    def create(self, nodes: str, data: dict) -> LeafABC:
+        element_types = self._get_element_types(nodes)
+        init_data = prepare_data_for_leaf(data)
+        element = self._find_element_by_signature(element_types, init_data)
+        if element:
+            return element(**init_data)
+        else:
+            raise ValueError(f'No element signature match input element parameters '
+                             f'{", ".join([par for par in init_data])} and nodes: {nodes} ')
+
+
+
+
+
+
 
 
 element_factory = ElementFactory()
