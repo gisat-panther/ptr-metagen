@@ -119,13 +119,6 @@ class _Generator(GeneratorABC):
         """Generate json representation of fixtures from register"""
         self.serializer.to_json(path)
 
-    def get_element_by_nameInternal(self, name: str) -> Type[LeafABC]:
-        """Return element of given nameInternal"""
-        if self.reg.get_by_name(name):
-            return self.reg.get_by_name(name)
-        else:
-            raise ValueError(f'Element with nameInternal {name} did not find')
-
     def get_element_by_uuid(self, uuid: str) -> Type[LeafABC]:
         """Return element of given uuid"""
         if self.reg.get_by_uuid(uuid):
@@ -135,8 +128,4 @@ class _Generator(GeneratorABC):
 
     def get_elements_by_type(self, element: Type[LeafABC]) -> List[Type[LeafABC]]:
         """Return list of all elements of given element type"""
-        return [v for k, v in self.reg.name.items() if isinstance(v, element.__wrapped__)]
-
-    def get_elements_by_name(self, name: str) -> List[Type[LeafABC]]:
-        """Return list of elements that internal name contains part of input string"""
-        return [v for k, v in self.reg.name.items() if k.__contains__(name)]
+        return [v for k, v in self.reg.uuid.items() if isinstance(v, element.__wrapped__)]

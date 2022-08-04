@@ -26,14 +26,6 @@ class RegisterABC(BaseModel, ABC):
         pass
 
     @abstractmethod
-    def get_by_name(self, name: str) -> Type[LeafABC]:
-        pass
-
-    @abstractmethod
-    def get_by_hash(self, hash: int) -> Type[LeafABC]:
-        pass
-
-    @abstractmethod
     def get_by_uuid(self, uuid: UUID) -> Type[LeafABC]:
         pass
 
@@ -43,33 +35,27 @@ class RegisterABC(BaseModel, ABC):
 
 # register
 class DictRegister(RegisterABC, Singleton):
-    hashs: dict = Field(default_factory=dict)
     uuid: dict = Field(default_factory=dict)
-    name: dict = Field(default_factory=dict)
+
+    @property
+    def hashes(self):
+        return {hash(element) for element in self.uuid.values()}
 
     def get_elements(self) -> List[Type[LeafABC]]:
-        return [element for element in self.hashs.values()]
+        return [element for element in self.uuid.values()]
 
     def add(self, element: Type[LeafABC]) -> None:
         if not self.check_register(element):
-            self.hashs.update({hash(element): element})
             self.uuid.update({str(element.key): element})
-            self.name.update({element.nameInternal: element})
         else:
-            raise ValueError(f'PTR element "{element.__class__.__name__}" with nameInternal: {element.nameInternal}, '
+            raise ValueError(f'PTR element "{element.__class__.__name__}" with '
                              f'key: {element.key} and hash: {hash(element)} already exist')
 
     def update(self, attrName: str, value: Any)-> None:
         raise NotImplementedError()
 
     def check_register(self, element: Type[LeafABC]) -> bool:
-        return all([self.hashs.get(hash(element)), self.name.get(element.nameInternal)])
-
-    def get_by_name(self, name: str) -> Type[LeafABC]:
-        return self.name.get(name)
-
-    def get_by_hash(self, hash: int) -> Type[LeafABC]:
-        return self.hashs.get(hash)
+        return hash(element) in self.hashes
 
     def get_by_uuid(self, uuid: str) -> Type[LeafABC]:
         if UUID(uuid):

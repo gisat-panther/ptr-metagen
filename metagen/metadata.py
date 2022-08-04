@@ -38,8 +38,6 @@ class Leaf(LeafABC):
         pass
 
     def __hash__(self) -> int:
-        # return hash(tuple([self.__dict__.get(attr) if not isinstance(self.__dict__.get(attr), list)
-        #                            else tuple(self.__dict__.get(attr)) for attr in self.hash_attrs]))
         return make_hash({k: v for k, v in self.__dict__.items() if k in self.hash_attrs})
 
     def __setattr__(self, attrName, value):
