@@ -39,7 +39,7 @@ class DictRegister(RegisterABC, Singleton):
 
     @property
     def hashes(self):
-        return {hash(element) for element in self.uuid.values()}
+        return {hash(element): element for element in self.uuid.values()}
 
     def get_elements(self) -> List[Type[LeafABC]]:
         return [element for element in self.uuid.values()]
@@ -51,7 +51,7 @@ class DictRegister(RegisterABC, Singleton):
             raise ValueError(f'PTR element "{element.__class__.__name__}" with '
                              f'key: {element.key} and hash: {hash(element)} already exist')
 
-    def update(self, attrName: str, value: Any)-> None:
+    def update(self, attrName: str, value: Any) -> None:
         raise NotImplementedError()
 
     def check_register(self, element: Type[LeafABC]) -> bool:
@@ -60,6 +60,9 @@ class DictRegister(RegisterABC, Singleton):
     def get_by_uuid(self, uuid: str) -> Type[LeafABC]:
         if UUID(uuid):
             return self.uuid.get(uuid)
+
+    def get_by_hash(self, hash: int) -> Type[LeafABC]:
+        return self.hashes.get(hash)
 
 
 class RegisterFactory(BaseModel):

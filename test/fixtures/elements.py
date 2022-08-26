@@ -70,7 +70,7 @@ def period_1a(application_1a, scope_1a):
 @pytest.fixture(autouse=True)
 def attribute_1a(application_1a):
     return Attribute(applicationKey=application_1a, nameInternal='test_attribute', nameDisplay='test_attribute',
-                     description='bla', type='numeric', unit='°C', valueType='test', color='black')
+                     description='bla', type='number', unit='°C', valueType='test', color='black')
 
 
 @pytest.fixture(autouse=True)

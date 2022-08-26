@@ -159,7 +159,7 @@ class Attribute(Leaf):
 
     @property
     def hash_attrs(self) -> tuple:
-        return 'applicationKey', 'nameDisplay', 'type', 'nameInternal'
+        return 'applicationKey', 'nameDisplay', 'type', 'nameInternal', 'unit', 'nameInternal'
 
 
 @exist_in_register
@@ -172,6 +172,9 @@ class Period(Leaf):
     start: Optional[str]
     end: Optional[str]
     period: Optional[str]
+    tagKeys: Optional[Union[List[UUID], List[str]]]
+
+    _validate_tagKeys = validator('tagKeys', allow_reuse=True)(validate_list_uuid)
 
     @root_validator(pre=True)
     def handle_prtData_input(cls, values):
@@ -187,7 +190,7 @@ class Period(Leaf):
 
     @property
     def hash_attrs(self) -> tuple:
-        return 'applicationKey', 'nameDisplay', 'period', 'start', 'end', 'nameInternal'
+        return 'applicationKey', 'nameDisplay', 'period', 'start', 'end', 'nameInternal', 'tagKeys'
 
 
 @exist_in_register
@@ -234,7 +237,7 @@ class Tag(Leaf):
     nameDisplay: Optional[str]
     description: Optional[str]
     color: Optional[str]
-    tagKeys: Optional[Union[List[UUID], List[str]]]
+    tagKeys: Optional[Union[List[UUID], List[str], List[Type[LeafABC]]]]
 
     _validate_tagKeys = validator('tagKeys', allow_reuse=True)(validate_list_uuid)
 
@@ -426,7 +429,7 @@ class ElementSignature(BaseModel):
 
         return values
 
-    def check_signature(self, input_parameters: List[str]) -> bool:
+    def check_signature(self, input_parameters: dict) -> bool:
         if self.type:
             if self.type != input_parameters.get('type'):
                 return False
@@ -440,8 +443,7 @@ class ElementSignature(BaseModel):
 class ElementFactory(FactoryABC, BaseModel):
     elements_register: dict = Field(default_factory=dict)
 
-
-    def add(self, element: Type[Leaf]) -> None:
+    def add(self, element: Type[LeafABC]) -> None:
         element_signature = ElementSignature(parameters=element)
 
         if not self.elements_register.get(element.__nodes__(self)):
@@ -456,13 +458,13 @@ class ElementFactory(FactoryABC, BaseModel):
             raise NotImplementedError(f'No elements for node {nodes}')
 
     @staticmethod
-    def _find_element_by_signature(element_types: dict, init_data: dict)-> Optional[LeafABC]:
+    def _find_element_by_signature(element_types: dict, init_data: dict)-> Optional[Type[LeafABC]]:
         for signature, element in element_types.items():
             if signature.check_signature(init_data):
                 return element
         return None
 
-    def create(self, nodes: str, data: dict) -> LeafABC:
+    def create(self, nodes: str, data: dict) -> Type[LeafABC]:
         element_types = self._get_element_types(nodes)
         init_data = prepare_data_for_leaf(data)
         element = self._find_element_by_signature(element_types, init_data)
