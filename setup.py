@@ -8,7 +8,6 @@ HERE = pathlib.Path(__file__).parent
 # The text of the README file
 README = (HERE / "README.md").read_text()
 
-# This call to setup() does all the work
 setup(
     name="ptrmetagen",
     version=__version__,
@@ -24,7 +23,7 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.9"],
     packages=["metagen", "metagen.components", "metagen.utils", "metagen.config"],
-    package_data = {'': ['metagen/config/config.yaml']},
+    package_data = {'': ['metagen/config/config.yaml', 'pyproject.toml']},
     include_package_data=True,
     entry_points='''
        [console_scripts]
