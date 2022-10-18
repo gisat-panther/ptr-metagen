@@ -45,11 +45,16 @@ class DictRegister(RegisterABC, Singleton):
         return [element for element in self.uuid.values()]
 
     def add(self, element: Type[LeafABC]) -> None:
+        # TODO resolve hash and uuid check
         if not self.check_register(element):
-            self.uuid.update({str(element.key): element})
+            if element.key not in self.uuid:
+                self.uuid.update({str(element.key): element})
+            else:
+                raise KeyError(f'UUID duplicity conflict: element {element} with UUID {element.key} exist in register')
         else:
-            raise ValueError(f'PTR element "{element.__class__.__name__}" with '
+            raise ValueError(f'Hash duplicity conflict: "{element.__class__.__name__}" with '
                              f'key: {element.key} and hash: {hash(element)} already exist')
+
 
     def update(self, attrName: str, value: Any) -> None:
         raise NotImplementedError()

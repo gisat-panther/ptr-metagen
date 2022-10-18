@@ -176,15 +176,6 @@ class Period(Leaf):
 
     _validate_tagKeys = validator('tagKeys', allow_reuse=True)(validate_list_uuid)
 
-    @root_validator(pre=True)
-    def handle_prtData_input(cls, values):
-        if all([key not in values for key in ['period', 'start', 'end']]):
-            raise ValueError('Period has to have period or start and end parameters')
-        elif 'period' not in values and any([key not in values for key in ['start', 'end']]):
-            raise ValueError('Period has to have defined start and end parameters')
-        else:
-            return values
-
     def __nodes__(self) -> str:
         return 'metadata.periods'
 

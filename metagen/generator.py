@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Union, List, Type
 import json
+from uuid import UUID
 
 from metagen.base import LeafABC, UUIDEncoder, FactoryABC
 from metagen.helpers import create_file, load_json
@@ -71,6 +72,7 @@ class JSONDeserializer(DeSerializerABC):
         path = path_check(path)
         obj = load_json(path, encoding)
         for node, structure in obj.items():
+            print(f'Loading: {node}')
             self._parse(node, structure)
 
     def _parse(self, nodes: str, obj: Union[dict, list]) -> None:
@@ -84,7 +86,7 @@ class JSONDeserializer(DeSerializerABC):
 
 
 # generator
-class GeneratorABC(BaseModel, ABC):
+class PTRMetagenABC(BaseModel, ABC):
     serializer: SerializerABC
     deserializer: DeSerializerABC
     importer: ImporterABC
@@ -98,7 +100,7 @@ class GeneratorABC(BaseModel, ABC):
         arbitrary_types_allowed = True
 
 
-class _Generator(GeneratorABC):
+class _PTRMetagen(PTRMetagenABC):
     serializer: SerializerABC
     deserializer: DeSerializerABC
     importer: ImporterABC
@@ -129,3 +131,20 @@ class _Generator(GeneratorABC):
     def get_elements_by_type(self, element: Type[LeafABC]) -> List[Type[LeafABC]]:
         """Return list of all elements of given element type"""
         return [v for k, v in self.reg.uuid.items() if isinstance(v, element.__wrapped__)]
+
+    def check_missing_keys(self) -> List[str]:
+        missing = []
+        for element in self.reg.uuid.values():
+            for attrName, value in element.__dict__.items():
+                if attrName.__contains__('Key') and value:
+                    if isinstance(value, (UUID, str)):
+                        if not str(value) in self.reg.uuid:
+                            missing.append(value)
+                    elif isinstance(value, list):
+                        for uuid in value:
+                            if not str(uuid) in self.reg.uuid:
+                                missing.append(uuid)
+        return missing
+
+
+

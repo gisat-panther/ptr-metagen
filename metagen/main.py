@@ -3,7 +3,7 @@ from functools import wraps
 
 from metagen.config.config import load_yaml, BASE_CONFIG_FILE, Config
 from metagen.register import register_factory, RegisterABC
-from metagen.generator import JSONSerializer, JSONDeserializer, _Generator
+from metagen.generator import JSONSerializer, JSONDeserializer, _PTRMetagen
 from metagen.importer import Importer
 
 CONFIG = Config(**load_yaml(BASE_CONFIG_FILE))
@@ -36,6 +36,6 @@ deserializer = JSONDeserializer(factory=element_factory)
 importer = Importer(**CONFIG.importer_setting.dict())
 
 
-def Generator(register=register) -> _Generator:
-    return _Generator(serializer=serializer, deserializer=deserializer, importer=importer, reg=register)
+def PTRMetagen(register=register) -> _PTRMetagen:
+    return _PTRMetagen(serializer=serializer, deserializer=deserializer, importer=importer, reg=register)
 

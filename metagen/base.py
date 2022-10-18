@@ -39,7 +39,6 @@ class BaseModelArbitrary(BaseModel):
 
 # model classes
 class LeafABC(BaseModel, ABC):
-    key: Optional[UUID]
 
     @abstractmethod
     def __nodes__(self) -> str:
