@@ -37,7 +37,7 @@ class BaseModelArbitrary(BaseModel):
         arbitrary_types_allowed = True
 
 
-# model classes
+# abstract model classes
 class LeafABC(BaseModel, ABC):
 
     @abstractmethod
@@ -61,6 +61,7 @@ class FactoryABC(BaseModel, ABC):
         pass
 
 
+# helepr function
 def set_key_from_input(value: Union[str, UUID, Type[LeafABC]]):
     """
     Helper method used as validator in pydantic model.

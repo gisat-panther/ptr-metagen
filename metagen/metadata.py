@@ -52,7 +52,6 @@ class Leaf(LeafABC):
 # metadata
 @exist_in_register
 class Application(Leaf):
-
     name: str = Field(...)
     nameInternal: Optional[str]
     description: Optional[str]
@@ -485,9 +484,9 @@ element_factory.add(Style)
 element_factory.add(SpatialVector)
 element_factory.add(SpatialWMS)
 element_factory.add(SpatialWMTS)
+element_factory.add(SpatialCOG)
 element_factory.add(SpatialAttribute)
 element_factory.add(RelationSpatial)
 element_factory.add(RelationAttribute)
 element_factory.add(View)
 element_factory.add(Tag)
-element_factory.add(SpatialCOG)

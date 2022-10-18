@@ -4,8 +4,8 @@ from uuid import UUID
 from datetime import datetime
 
 from metagen.base import LeafABC, set_key_from_input
-from metagen.components._general import Component
-from metagen.components._general import Filter
+from metagen.components._base import Component
+from metagen.components._base import Filter
 
 
 

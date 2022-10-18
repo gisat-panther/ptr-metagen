@@ -6,7 +6,7 @@ from ._map import Maps, MapViewSetting, MapSynchronizationSetting, MapBackground
     MapSetDefinitions, MapSet, MapSetDefinitionsData
 from ._timeline import Timeline, TimelineLayer, TimelineItem, TimelineLegend
 from ._view import ViewComponent
-from ._general import Filter, Component
+from ._base import Filter, Component
 
 
 class StateComponents(Component):

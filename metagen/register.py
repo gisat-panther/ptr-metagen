@@ -3,11 +3,11 @@ from uuid import UUID
 from typing import Type, Any, List, Dict
 from pydantic import BaseModel, Field
 
-from metagen.base import LeafABC
+from metagen.base import LeafABC, BaseModelArbitrary
 from metagen.helpers import Singleton
 
 
-class RegisterABC(BaseModel, ABC):
+class RegisterABC(BaseModelArbitrary, ABC):
 
     @abstractmethod
     def get_elements(self) -> List[Type[LeafABC]]:
@@ -18,19 +18,12 @@ class RegisterABC(BaseModel, ABC):
         pass
 
     @abstractmethod
-    def update(self, attrName: str, value: Any)-> None:
-        pass
-
-    @abstractmethod
     def check_register(self, element: Type[LeafABC]) -> bool:
         pass
 
     @abstractmethod
     def get_by_uuid(self, uuid: UUID) -> Type[LeafABC]:
         pass
-
-    class Config:
-        arbitrary_types_allowed = True
 
 
 # register
@@ -54,10 +47,6 @@ class DictRegister(RegisterABC, Singleton):
         else:
             raise ValueError(f'Hash duplicity conflict: "{element.__class__.__name__}" with '
                              f'key: {element.key} and hash: {hash(element)} already exist')
-
-
-    def update(self, attrName: str, value: Any) -> None:
-        raise NotImplementedError()
 
     def check_register(self, element: Type[LeafABC]) -> bool:
         return hash(element) in self.hashes

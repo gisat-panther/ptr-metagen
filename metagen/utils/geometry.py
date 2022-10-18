@@ -23,7 +23,7 @@ class ShapeCollection:
         """Return convex hull of the collection"""
         if self.type.issubset({'Polygon', 'MultiPolygon'}):
             return MultiPolygon(self.collection).convex_hull
-        elif  self.type.issubset({'LineString', 'MultiLineString', 'LinearRing'}):
+        elif self.type.issubset({'LineString', 'MultiLineString', 'LinearRing'}):
             return MultiLineString(self.collection).convex_hull
         elif self.type.issubset({'Point', 'MultiPoint'}):
             return MultiPoint(self.collection).convex_hull

@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from metagen.components._general import Component
+from metagen.components._base import Component
 
 
 class ViewComponent(Component):
