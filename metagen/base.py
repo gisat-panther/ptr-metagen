@@ -73,6 +73,14 @@ def set_key_from_input(value: Union[str, UUID, Type[LeafABC]]):
         return UUID(value)
     return value
 
+def singleton(some_class):
+    instances = {}
+    def getinstance(*args, **kwargs):
+        if some_class not in instances:
+            instances[some_class] = some_class(*args, **kwargs)
+        return instances[some_class]
+    return getinstance
+
 
 # helper class
 class UUIDEncoder(json.JSONEncoder):

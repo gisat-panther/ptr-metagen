@@ -1,12 +1,12 @@
 from warnings import warn
 from functools import wraps
 
-from metagen.config.config import load_yaml, BASE_CONFIG_FILE, Config
+from metagen.config.config import Config
 from metagen.register import register_factory, RegisterABC
 from metagen.generator import JSONSerializer, JSONDeserializer, _PTRMetagen
 from metagen.importer import Importer
 
-CONFIG = Config(**load_yaml(BASE_CONFIG_FILE))
+CONFIG = Config()
 
 # register
 register = register_factory.get(CONFIG.register_setting.registerName)()

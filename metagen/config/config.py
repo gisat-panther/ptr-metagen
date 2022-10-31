@@ -2,40 +2,53 @@ from pydantic import BaseModel, Field, AnyUrl
 import yaml
 from typing import Literal, Optional
 from pathlib import Path
+from metagen.helpers import make_hash
+from metagen.base import singleton
 
 BASE_CONFIG_FILE = Path(__file__).parent / 'config.yaml'
 
 
-class RegisterConfig(BaseModel):
+class HashableBaseModel(BaseModel):
+    """Helper class implementing hash into the base model"""
+
+    def __hash__(self) -> int:
+        return make_hash({k: v for k, v in self.__dict__.items()})
+
+
+class RegisterConfig(HashableBaseModel):
     registerName: Literal['pandas', 'dict']
 
     def __str__(self):
-        return '\n'.join([f"- {k} : {v}" for k, v in self.__dict__.items()])
+        items = [f"\t- {k} : {v}\n" for k, v in self.__dict__.items()]
+        return ''.join(items)
 
 
-class ImporterConfig(BaseModel):
+class ImporterConfig(HashableBaseModel):
     path: Optional[str]
     instance_url: Optional[str]
     host: Optional[str]
 
     def __str__(self):
-        return '\n'.join([f"- {k} : {v}" for k, v in self.__dict__.items()])
+        items = [f"\t- {k} : {v}\n" for k, v in self.__dict__.items()]
+        return ''.join(items)
 
 
-class Config(BaseModel):
-    register_setting: RegisterConfig = Field(default_factory=RegisterConfig)
-    importer_setting: ImporterConfig = Field(default_factory=ImporterConfig)
+@singleton
+class Config(HashableBaseModel):
+    register_setting: Optional[RegisterConfig] = Field(default_factory=RegisterConfig)
+    importer_setting: Optional[ImporterConfig] = Field(default_factory=ImporterConfig)
 
-    @classmethod
-    def load(cls):
-        data = load_yaml('config.yaml')
-        return cls(**data)
+    def __init__(self):
+        super().__init__(**load_yaml('config.yaml'))
 
-    def save(self):
+    def __setattr__(self, name, value):
+        """Called when attribute is set. Automatically save the setting"""
+        setattr(self, name, value)
         dump_yaml(Path('config.yaml'), self.dict())
 
     def __str__(self):
-        return '\n'.join([f"- {k} : \n \t {str(v)}" for k, v in self.__dict__.items()])
+        items = [f"{k} : {str(v)}" for k, v in self.__dict__.items()]
+        return ''.join([f"{k} : \n {str(v)}" for k, v in self.__dict__.items()])
 
 
 def load_yaml(path: str) -> dict:
@@ -49,9 +62,11 @@ def dump_yaml(path: Path, data: dict) -> None:
 
 
 if __name__ == '__main__':
-    config = Config.load()
-    config.importer_setting.host = 'http://localhost:8000/metadata'
-    config.save()
+    config = Config()
+    print(config)
+    # config.importer_setting.host = 'http://localhost:9000/metadata'
+    config.importer_setting = 'http://localhost:90'
+
 
 
 
