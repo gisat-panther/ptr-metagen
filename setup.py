@@ -23,10 +23,20 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.9"],
     packages=["metagen", "metagen.components", "metagen.utils", "metagen.config"],
-    package_data = {'': ['metagen/config/config.yaml', 'pyproject.toml']},
+    package_data={'': ['metagen/config/config.yaml', 'pyproject.toml']},
     include_package_data=True,
     entry_points='''
        [console_scripts]
        metagen=metagen.config.cli:main
    ''',
+    install_requires=[
+        'pytest == 6.2.1',
+        'pydantic == 1.9.1',
+        'setuptools == 58.5.3',
+        'Shapely == 1.8.1',
+        'PyYAML == 5.4.1',
+        'click == 7.1.2',
+        'pyyaml == 5.4.1',
+        'pandas == 1.4.3'
+    ]
     )
