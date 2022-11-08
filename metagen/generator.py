@@ -10,6 +10,7 @@ from metagen.helpers import create_file, load_json
 from metagen.pipes import path_check
 from metagen.register import RegisterABC
 from metagen.importer import ImporterABC
+from metagen.config.config import Config
 
 
 # serialization & deserialization
@@ -106,7 +107,8 @@ class _PTRMetagen(PTRMetagenABC):
     importer: ImporterABC
     reg: RegisterABC
 
-    def import_fixtures(self) -> dict:
+    # TODO: add instance url as parameter, add confirmation with instance preview
+    def import_fixtures(self, instance: str = Config().importer_setting.instance_url) -> dict:
         return self.importer.run(self.to_dict())
 
     def load_fixtures(self, path: Union[Path, str], encoding='utf8') -> None:

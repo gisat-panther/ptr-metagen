@@ -8,7 +8,9 @@ from warnings import warn
 from metagen.base import BaseModelArbitrary
 
 # TODO: Geometry for raster
-# TODO: Solve buffer for the case of single line or two points
+# TODO: Solve buffer for the case of single line or two
+# TODO: get geometry from wms
+# TODO: set geometry from method
 
 @dataclass
 class ShapeCollection:
@@ -67,6 +69,14 @@ class Geometry(BaseModelArbitrary):
 
     """
     data: Any
+
+    @classmethod
+    def from_bbox(cls, xmin, ymin, xmax, ymax):
+        raise NotImplemented()
+
+    @classmethod
+    def from_getCapabilities(cls, url):
+        raise NotImplemented()
 
     @property
     def geom_type(self):

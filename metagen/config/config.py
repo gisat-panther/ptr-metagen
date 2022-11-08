@@ -39,12 +39,12 @@ class Config(HashableBaseModel):
     importer_setting: Optional[ImporterConfig] = Field(default_factory=ImporterConfig)
 
     def __init__(self):
-        super().__init__(**load_yaml('config.yaml'))
+        super().__init__(**load_yaml(BASE_CONFIG_FILE))
 
     def __setattr__(self, name, value):
         """Called when attribute is set. Automatically save the setting"""
         setattr(self, name, value)
-        dump_yaml(Path('config.yaml'), self.dict())
+        dump_yaml(Path(BASE_CONFIG_FILE), self.dict())
 
     def __str__(self):
         items = [f"{k} : {str(v)}" for k, v in self.__dict__.items()]
@@ -59,14 +59,6 @@ def load_yaml(path: str) -> dict:
 def dump_yaml(path: Path, data: dict) -> None:
     with open(path, 'w') as file:
         file.write(yaml.dump(data, Dumper=yaml.Dumper))
-
-
-if __name__ == '__main__':
-    config = Config()
-    print(config)
-    # config.importer_setting.host = 'http://localhost:9000/metadata'
-    config.importer_setting = 'http://localhost:90'
-
 
 
 

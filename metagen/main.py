@@ -2,7 +2,7 @@ from warnings import warn
 from functools import wraps
 
 from metagen.config.config import Config
-from metagen.register import register_factory, RegisterABC
+from metagen.register import register_factory
 from metagen.generator import JSONSerializer, JSONDeserializer, _PTRMetagen
 from metagen.importer import Importer
 

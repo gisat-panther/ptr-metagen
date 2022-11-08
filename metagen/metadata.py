@@ -238,6 +238,37 @@ class Tag(Leaf):
     def hash_attrs(self) -> tuple:
         return 'nameDisplay', 'tagKeys', 'nameInternal'
 
+@exist_in_register
+class AreaTrees(Leaf):
+    nameInternal: Optional[str]
+    nameDisplay: Optional[str]
+    scopeKey: Optional[Union[UUID, Leaf]]
+    applicationKey: Optional[Union[str, Leaf]]
+
+    def __nodes__(self) -> str:
+        return 'metadata.areaTrees'
+
+    @property
+    def hash_attrs(self) -> tuple:
+        return 'nameDisplay', 'scopeKey', 'applicationKey'
+
+@exist_in_register
+class AreaTreeLevels(Leaf):
+    nameInternal: Optional[str]
+    nameDisplay: Optional[str]
+    level: int
+    scopeKey: Optional[Union[UUID, Leaf]]
+    applicationKey: Optional[Union[str, Leaf]]
+    areaTreeKey: Optional[Union[UUID, Leaf]]
+
+    def __nodes__(self) -> str:
+        return 'metadata.areaTreeLevels'
+
+    @property
+    def hash_attrs(self) -> tuple:
+        return 'nameDisplay', 'scopeKey', 'applicationKey', 'areaTreeKey', 'level'
+
+
 
 # datasource
 
@@ -376,9 +407,24 @@ class RelationAttribute(Leaf):
         return 'scopeKey:', 'periodKey', 'placeKey', 'attributeDataSourceKey', 'layerTemplateKey', 'scenarioKey', \
                'caseKey', 'attributeSetKey', 'attributeKey', 'areaTreeLevelKey', 'applicationKey', 'nameInternal'
 
+
+@exist_in_register
+class RelationArea(Leaf):
+    nameInternal: Optional[str]
+    scopeKey: Optional[Union[UUID, Leaf]]
+    spatialDataSourceKey: Optional[Union[UUID, Leaf]]
+    areaTreeLevelKey: Optional[Union[UUID, Leaf]]
+    applicationKey: Optional[Union[str, Leaf]]
+
+    def __nodes__(self) -> str:
+        return 'relations.area'
+
+    @property
+    def hash_attrs(self) -> tuple:
+        return 'applicationKey', 'scopeKey', 'spatialDataSourceKey', 'areaTreeLevelKey', 'applicationKey'
+
+
 # views
-
-
 @exist_in_register
 class View(Leaf):
     nameInternal: Optional[str]
@@ -465,28 +511,26 @@ class ElementFactory(FactoryABC, BaseModel):
                              f'{", ".join([par for par in init_data])} and nodes: {nodes} ')
 
 
-
-
-
-
-
-
 element_factory = ElementFactory()
 element_factory.add(Application)
 element_factory.add(Configuration)
-element_factory.add(Scope)
 element_factory.add(Place)
-element_factory.add(LayerTemplate)
-element_factory.add(Attribute)
 element_factory.add(Period)
+element_factory.add(LayerTemplate)
+element_factory.add(Scope)
 element_factory.add(Case)
+element_factory.add(Tag)
+element_factory.add(Attribute)
 element_factory.add(Style)
+element_factory.add(AreaTrees)
+element_factory.add(AreaTreeLevels)
+element_factory.add(SpatialAttribute)
 element_factory.add(SpatialVector)
 element_factory.add(SpatialWMS)
 element_factory.add(SpatialWMTS)
 element_factory.add(SpatialCOG)
-element_factory.add(SpatialAttribute)
 element_factory.add(RelationSpatial)
 element_factory.add(RelationAttribute)
+element_factory.add(RelationArea)
 element_factory.add(View)
-element_factory.add(Tag)
+
