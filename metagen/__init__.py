@@ -4,4 +4,4 @@ from metagen.metadata import Application, Configuration, Scope, Place, Period, L
     AreaTreeLevels, RelationArea
 from metagen.config.config import Config
 
-__version__ = '1.2'
+__version__ = '1.2.1'

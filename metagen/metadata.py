@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, root_validator, validator, PrivateAttr
+from pydantic import BaseModel, Field, root_validator, validator
 from typing import Optional, Union, List, Literal, Tuple, Type
 from pathlib import Path
 from inspect import signature
@@ -13,11 +13,7 @@ from metagen.main import exist_in_register
 # base class
 class Leaf(LeafABC):
     key: Optional[Union[UUID, str]] = Field(default_factory=uuid4)
-    _input_pars: List[str] = PrivateAttr()
-
-    def __init__(self, **data):
-        super().__init__(**data)
-        self._input_pars = [k for k in data.keys()]
+    _input_pars: Optional[List[str]]
 
     def to_dict(self):
         include = {k for k, v in self.__dict__.items() if k in self._input_pars or v is not None}
@@ -27,7 +23,12 @@ class Leaf(LeafABC):
         return {"key": str(key), "data": data}
 
     @root_validator(pre=True, allow_reuse=True)
-    def set_key(cls, values: dict) -> dict:
+    def set_data(cls, values: dict) -> dict:
+        """initial method that prepare tha element data, Method:
+        - extract the key UUID from input elements and set them as attribute value
+        - set _input_pars attribute. _input_pars store information about the attributes that was set at the
+        initialization as None"""
+        cls._input_pars = [k for k in values.keys()]
         return {k: (v.key if isinstance(v, Leaf) else v) for k, v in values.items()}
 
     @property
@@ -413,15 +414,23 @@ class RelationArea(Leaf):
     nameInternal: Optional[str]
     scopeKey: Optional[Union[UUID, Leaf]]
     spatialDataSourceKey: Optional[Union[UUID, Leaf]]
+    areaTreeKey: Optional[Union[UUID, Leaf]]
     areaTreeLevelKey: Optional[Union[UUID, Leaf]]
     applicationKey: Optional[Union[str, Leaf]]
+    placeKey: Optional[Union[UUID, Leaf]]
+    periodKey: Optional[Union[UUID, Leaf]]
+    scenarioKey: Optional[Union[UUID, Leaf]]
+    fidColumnName: Optional[str]
+    parentFidColumnName: Optional[str]
+
 
     def __nodes__(self) -> str:
         return 'relations.area'
 
     @property
     def hash_attrs(self) -> tuple:
-        return 'applicationKey', 'scopeKey', 'spatialDataSourceKey', 'areaTreeLevelKey', 'applicationKey'
+        return 'applicationKey', 'scopeKey', 'spatialDataSourceKey', 'areaTreeLevelKey', 'applicationKey', 'placeKey', \
+               'periodKey', 'areaTreeKey'
 
 
 # views
