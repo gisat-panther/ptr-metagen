@@ -1,5 +1,5 @@
 from pytest import fixture
-from shapely.geometry import Polygon, MultiPolygon, GeometryCollection
+from shapely.geometry import Polygon, MultiPolygon, GeometryCollection, box
 from geopandas import GeoDataFrame
 
 from metagen.utils import Geometry
@@ -70,3 +70,10 @@ def test_geometry_from_multipolygon(multipolygon):
 def test_collection_poly(polygon1, polygon2, polygon3, multipolygon):
     collection = ShapeCollection([polygon1, polygon2, polygon3])
     assert collection.convex_hull == multipolygon.convex_hull
+
+
+def test_geomtery_from_bbox():
+     bbox = [0.0, 0.0, 1.0, 1.0]
+     geom = Geometry.from_bbox(*bbox)
+     assert geom.geometry() == box(*bbox).__geo_interface__
+

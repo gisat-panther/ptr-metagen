@@ -1,16 +1,17 @@
 from pydantic import BaseModel, Field
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Union, List, Type
+from typing import Union, List, Type, Optional, Literal
 import json
 from uuid import UUID
 
 from metagen.base import LeafABC, UUIDEncoder, FactoryABC
 from metagen.helpers import create_file, load_json
+from metagen.config.config import CONFIG
 from metagen.pipes import path_check
 from metagen.register import RegisterABC
-from metagen.importer import ImporterABC
-from metagen.config.config import Config
+from metagen.importer import ImporterFactory
+
 
 
 # serialization & deserialization
@@ -90,7 +91,7 @@ class JSONDeserializer(DeSerializerABC):
 class PTRMetagenABC(BaseModel, ABC):
     serializer: SerializerABC
     deserializer: DeSerializerABC
-    importer: ImporterABC
+    importer_factory: ImporterFactory
     reg: RegisterABC
 
     @abstractmethod
@@ -104,12 +105,21 @@ class PTRMetagenABC(BaseModel, ABC):
 class _PTRMetagen(PTRMetagenABC):
     serializer: SerializerABC
     deserializer: DeSerializerABC
-    importer: ImporterABC
     reg: RegisterABC
+    importer_factory: ImporterFactory
 
-    # TODO: add instance url as parameter, add confirmation with instance preview
-    def import_fixtures(self, instance: str = Config().importer_setting.instance_url) -> dict:
-        return self.importer.run(self.to_dict())
+    def import_fixtures(self, instance_url: Optional[str] = None, method: Optional[Literal['node', 'endpoint']] = None):
+        """
+        Method imports fixtures into the instance.
+        instance_url: str - url of instance in form foo.bar/backend/rest - Parameter optional, if None, instance_url is
+        taken from configuration
+        method: str: - parameter select method of import. "node" for Node.js importer, "endpoint" for url endpoint -
+        Parameter optional, if None, method is taken from configuration
+        """
+        Importer = self.importer_factory.get(method or CONFIG.importer_setting.method)
+        importer = Importer(instance_url=instance_url or CONFIG.importer_setting.instance_url,
+                            **CONFIG.importer_setting.dict(exclude={'instance_url'}))
+        importer.import_fixtures(fixtures=self.to_dict())
 
     def load_fixtures(self, path: Union[Path, str], encoding='utf8') -> None:
         """Load fixtures into the register"""
@@ -133,6 +143,12 @@ class _PTRMetagen(PTRMetagenABC):
     def get_elements_by_type(self, element: Type[LeafABC]) -> List[Type[LeafABC]]:
         """Return list of all elements of given element type"""
         return [v for k, v in self.reg.uuid.items() if isinstance(v, element.__wrapped__)]
+
+    def get_element_by_name_internal(self, name_internal: str) -> Type[LeafABC]:
+        return self.reg.get_element_by_name_internal(name_internal)
+
+    def find_elements_by_name_internal(self, name_internal: str) -> List[Type[LeafABC]]:
+        return self.reg.find_elements_by_name_internal(name_internal)
 
     def check_missing_keys(self) -> List[str]:
         missing = []

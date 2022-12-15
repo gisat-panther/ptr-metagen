@@ -190,6 +190,7 @@ class Case(Leaf):
     nameInternal: Optional[str]
     nameDisplay: Optional[str]
     description: Optional[str]
+    scopeKey: Optional[UUID]
     tagKeys: Optional[Union[List[UUID], List[str]]]
 
     _validate_tagKeys = validator('tagKeys', allow_reuse=True)(validate_list_uuid)
@@ -199,7 +200,7 @@ class Case(Leaf):
 
     @property
     def hash_attrs(self) -> tuple:
-        return 'applicationKey', 'nameDisplay', 'nameInternal', 'tagKeys'
+        return 'applicationKey', 'nameDisplay', 'nameInternal', 'tagKeys', 'scopeKey'
 
 
 @exist_in_register
@@ -420,6 +421,7 @@ class RelationArea(Leaf):
     placeKey: Optional[Union[UUID, Leaf]]
     periodKey: Optional[Union[UUID, Leaf]]
     scenarioKey: Optional[Union[UUID, Leaf]]
+    caseKey: Optional[Union[UUID, Leaf]]
     fidColumnName: Optional[str]
     parentFidColumnName: Optional[str]
 

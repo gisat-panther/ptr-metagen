@@ -1,12 +1,12 @@
 from warnings import warn
 from functools import wraps
 
-from metagen.config.config import Config
+from metagen.config.config import CONFIG
 from metagen.register import register_factory
 from metagen.generator import JSONSerializer, JSONDeserializer, _PTRMetagen
-from metagen.importer import Importer
+from metagen.importer import importer_factory
 
-CONFIG = Config()
+
 
 # register
 register = register_factory.get(CONFIG.register_setting.registerName)()
@@ -33,9 +33,9 @@ serializer = JSONSerializer(reg=register)
 
 from metagen.metadata import element_factory
 deserializer = JSONDeserializer(factory=element_factory)
-importer = Importer(**CONFIG.importer_setting.dict())
+
 
 
 def PTRMetagen(register=register) -> _PTRMetagen:
-    return _PTRMetagen(serializer=serializer, deserializer=deserializer, importer=importer, reg=register)
+    return _PTRMetagen(serializer=serializer, deserializer=deserializer, importer_factory=importer_factory, reg=register)
 

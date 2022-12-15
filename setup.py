@@ -15,7 +15,7 @@ setup(
     long_description=README,
     long_description_content_type="text/markdown",
     url="https://github.com/gisat-panther/ptr-metagen",
-    author="Michal Opetal",
+    author="Michal Opletal",
     author_email="michal.opletal@gisat.cz",
     license="MIT",
     classifiers=[
@@ -36,6 +36,7 @@ setup(
         'Shapely == 1.8.1',
         'PyYAML == 5.4.1',
         'click == 7.1.2',
-        'pandas == 1.4.3'
+        'pandas == 1.4.3',
+        'requests == 2.28.1'
     ]
     )

@@ -1,6 +1,6 @@
 from typing import Union, Type, Any, Literal, Callable, List, Optional
 from pydantic import validator, Field
-from shapely.geometry import MultiPolygon, MultiPoint, MultiLineString, shape, Polygon, Point, LineString, LinearRing
+from shapely.geometry import MultiPolygon, MultiPoint, MultiLineString, shape, Polygon, Point, LineString, LinearRing, box
 from shapely.geometry.base import BaseMultipartGeometry
 from dataclasses import dataclass
 from warnings import warn
@@ -11,6 +11,7 @@ from metagen.base import BaseModelArbitrary
 # TODO: Solve buffer for the case of single line or two
 # TODO: get geometry from wms
 # TODO: set geometry from method
+
 
 @dataclass
 class ShapeCollection:
@@ -71,8 +72,8 @@ class Geometry(BaseModelArbitrary):
     data: Any
 
     @classmethod
-    def from_bbox(cls, xmin, ymin, xmax, ymax):
-        raise NotImplemented()
+    def from_bbox(cls, minx, miny, maxx, maxy):
+        return cls(data=box(minx, miny, maxx, maxy))
 
     @classmethod
     def from_getCapabilities(cls, url):

@@ -27,6 +27,8 @@ class ImporterConfig(HashableBaseModel):
     path: Optional[str]
     instance_url: Optional[str]
     host: Optional[str]
+    token: str
+    method: str
 
     def __str__(self):
         items = [f"\t- {k} : {v}\n" for k, v in self.__dict__.items()]
@@ -60,5 +62,7 @@ def dump_yaml(path: Path, data: dict) -> None:
     with open(path, 'w') as file:
         file.write(yaml.dump(data, Dumper=yaml.Dumper))
 
+
+CONFIG = Config()
 
 

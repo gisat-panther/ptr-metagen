@@ -34,6 +34,10 @@ class DictRegister(RegisterABC, Singleton):
     def hashes(self):
         return {hash(element): element for element in self.uuid.values()}
 
+    @property
+    def name_internals(self):
+        return {element.nameInternal : element for element in self.uuid.values()}
+
     def get_elements(self) -> List[Type[LeafABC]]:
         return [element for element in self.uuid.values()]
 
@@ -57,6 +61,12 @@ class DictRegister(RegisterABC, Singleton):
 
     def get_by_hash(self, hash: int) -> Type[LeafABC]:
         return self.hashes.get(hash)
+
+    def get_element_by_name_internal(self, name_internal: str) -> Type[LeafABC]:
+        return self.name_internals.get(name_internal)
+
+    def find_elements_by_name_internal(self, name_internal: str) -> List[Type[LeafABC]]:
+        return [element for name, element in self.name_internals.items() if name.__contains__(name_internal)]
 
 
 class RegisterFactory(BaseModel):
